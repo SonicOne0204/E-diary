@@ -1,0 +1,8 @@
+fastapi[standard]
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart 
+sqlalchemy
+psycopg2-binary
+alembic
+pydantic_settings
