@@ -1,11 +1,11 @@
-from core.security import verify_password, hash_password, create_access_token
+from app.core.security import verify_password, hash_password, create_access_token
 from fastapi import status, Depends
 from fastapi import HTTPException
-from db.models.users import User
+from app.db.models.users import User
 from sqlalchemy.orm import Session
 from typing import Annotated
-from db.core import get_db
-from schemas.auth import Token, Registration_data, Login_data
+from app.db.core import get_db
+from app.schemas.auth import Token, Registration_data, Login_data
 
 
 

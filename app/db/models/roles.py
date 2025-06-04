@@ -1,7 +1,7 @@
 from sqlalchemy import String, Integer, Sequence, ForeignKey
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from typing import List, TYPE_CHECKING
-from db.core import model
+from app.db.core import model
 
 class Role(model):
     __tablename__ = 'roles'
