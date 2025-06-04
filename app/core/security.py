@@ -8,18 +8,18 @@ from app.core.settings import settings
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
-def hash_password(password):
+def hash_password(password) -> str:
     hashed_password = pwd_context.hash(password)
     return hashed_password
 
-def verify_password(plain, hashed):
+def verify_password(plain, hashed) -> bool:
     verifying = pwd_context.verify(plain, hashed)
     if verifying:
         return verifying
     else:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Wrong password')
     
-def create_access_token(data: dict, expiration: timedelta | None = None):
+def create_access_token(data: dict, expiration: timedelta | None = None) -> str: 
     data_copy = data.copy()
     if expiration == None:
         expire = datetime.now(tz=timezone.utc) + timedelta(minutes=30)
