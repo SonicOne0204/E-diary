@@ -3,8 +3,6 @@ from sqlalchemy import String, Integer, ForeignKey, Boolean
 
 from app.db.core import model
 from app.db.models.groups import Group
-from app.db.models.types import Teacher
-
 
 class School(model):
     __tablename__ = 'schools'
@@ -17,4 +15,4 @@ class School(model):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     teachers: Mapped[list['Teacher']] = relationship('Teacher', back_populates='school')
-    groups: Mapped[list['Group']] = relationship('Class', back_populates='school_group')
+    groups: Mapped[list['Group']] = relationship('Group', back_populates='school_group')

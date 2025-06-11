@@ -29,20 +29,20 @@ def login_user(db: Session ,user_data: Login_data) -> Token:
 def register_user(db: Session, user_data: Registration_data):
     username = user_data.username
     password = user_data.password
-    role = user_data.role
+    type = user_data.type
     user = db.query(User).filter(User.username == username).first()
     if user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='User already exists')
-    if role < 1 or role > 3: ## role Э(наоборот) [1; 3]    
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No such role')
+    if type == 'admin':    
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Cannot register as admin')
     hashed_password = hash_password(password)
-    user = User(username = username, hashed_password = hashed_password, role_id = role)
+    user = User(username = username, hashed_password = hashed_password, type = type)
     db.add(user)
     db.commit()
     db.refresh(user)
     return {
     username: {
             'username': username,
-            'role_id': role
+            'role_id': type
         }
     }

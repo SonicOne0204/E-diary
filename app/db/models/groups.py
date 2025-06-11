@@ -1,6 +1,7 @@
-from app.db.core import model
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, ForeignKey
+
+from app.db.core import model
 
 class Group(model):
     __tablename__ = 'groups'
