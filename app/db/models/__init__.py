@@ -1,0 +1,1 @@
+from app.db.models.types import Teacher 

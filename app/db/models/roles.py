@@ -1,14 +1,11 @@
-from sqlalchemy import String, Integer, Sequence, ForeignKey
-from sqlalchemy.orm import relationship, mapped_column, Mapped
-from typing import List, TYPE_CHECKING
 from app.db.core import model
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Integer, ForeignKey
 
 class Role(model):
     __tablename__ = 'roles'
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    title: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String)
 
-    users: Mapped[List["User"]] = relationship('User', back_populates= 'role') # type: ignore
-
-
+    teachers: Mapped[list['Teacher']] = relationship('Teacher', back_populates='role')
