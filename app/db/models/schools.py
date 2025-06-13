@@ -2,7 +2,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, ForeignKey, Boolean
 
 from app.db.core import model
-from app.db.models.groups import Group
 
 class School(model):
     __tablename__ = 'schools'
@@ -14,5 +13,7 @@ class School(model):
     name: Mapped[str] = mapped_column(String)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
+    principals: Mapped[list['Principal']] = relationship('Principal', back_populates='school')
     teachers: Mapped[list['Teacher']] = relationship('Teacher', back_populates='school')
+    students: Mapped[list['Student']] = relationship('Student', back_populates='school')
     groups: Mapped[list['Group']] = relationship('Group', back_populates='school_group')

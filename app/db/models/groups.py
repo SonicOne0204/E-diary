@@ -11,3 +11,4 @@ class Group(model):
     school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id', ondelete='CASCADE'))
 
     school_group: Mapped['School'] = relationship('School', back_populates='groups') # type: ignore
+    students: Mapped[list['Student']] = relationship('Student', back_populates='group')# type: ignore

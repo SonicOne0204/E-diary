@@ -5,6 +5,7 @@ from app.db.core import model
 from app.db.models.users import User
 from app.db.models.schools import School
 from app.db.models.roles import Role
+from app.db.models.groups import Group
 
 # Teacher, Student inherit from User model, because it is filled through polymorphysm 
 
@@ -19,4 +20,28 @@ class Teacher(User):
 
     __mapper_args__ = {
         'polymorphic_identity': 'teacher'
+    }
+
+class Principal(User):
+    __tablename__ = 'principals'
+    id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id'))
+
+    school: Mapped['School'] = relationship('School', back_populates='principals') 
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'principal'
+    }
+
+class Student(User):
+    __tablename__ = 'students'
+    id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id'))
+    group_id: Mapped[int] = mapped_column(Integer, ForeignKey('groups.id')) 
+
+    school: Mapped['School'] = relationship('School', back_populates='students') 
+    group: Mapped['Group'] = relationship('Group', back_populates='students')
+    
+    __mapper_args__={
+        'polymorphic_identity': 'student'
     }
