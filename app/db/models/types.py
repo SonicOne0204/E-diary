@@ -12,8 +12,8 @@ from app.db.models.groups import Group
 class Teacher(User):
     __tablename__ = 'teachers'
     id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
-    role_id: Mapped[int] = mapped_column(Integer, ForeignKey('roles.id'))
-    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id'))
+    role_id: Mapped[int] = mapped_column(Integer, ForeignKey('roles.id'), nullable=True)
+    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id'), nullable=True)
 
     school: Mapped['School'] = relationship('School', back_populates='teachers') 
     role: Mapped['Role'] = relationship('Role', back_populates='teachers')

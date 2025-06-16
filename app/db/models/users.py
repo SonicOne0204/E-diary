@@ -7,6 +7,9 @@ class User(model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    first_name: Mapped[str] = mapped_column(String)
+    last_name: Mapped[str] = mapped_column(String)
     hashed_password: Mapped[str] = mapped_column(String)
     type: Mapped[str] = mapped_column(String)
     
