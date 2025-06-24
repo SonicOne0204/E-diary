@@ -11,12 +11,12 @@ from app.db.models.groups import Group
 
 class Teacher(User):
     __tablename__ = 'teachers'
-    id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
-    role_id: Mapped[int] = mapped_column(Integer, ForeignKey('roles.id'), nullable=True)
-    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id'), nullable=True)
+    id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    role_id: Mapped[int] = mapped_column(Integer, ForeignKey('roles.id', ondelete='CASCADE'), nullable=True)
+    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id', ondelete='CASCADE'), nullable=True)
 
-    school: Mapped['School'] = relationship('School', back_populates='teachers') 
-    role: Mapped['Role'] = relationship('Role', back_populates='teachers')
+    school: Mapped['School'] = relationship('School', back_populates='teachers', passive_deletes=True) 
+    role: Mapped['Role'] = relationship('Role', back_populates='teachers', passive_deletes=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'teacher'
@@ -24,24 +24,27 @@ class Teacher(User):
 
 class Principal(User):
     __tablename__ = 'principals'
-    id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
-    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id'))
 
-    school: Mapped['School'] = relationship('School', back_populates='principals') 
+    id: Mapped[int] = mapped_column(Integer,ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id', ondelete='CASCADE'), nullable=True)
+
+    school: Mapped['School'] = relationship('School', back_populates='principals', passive_deletes=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'principal'
     }
 
+
 class Student(User):
     __tablename__ = 'students'
-    id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
-    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id'))
-    group_id: Mapped[int] = mapped_column(Integer, ForeignKey('groups.id')) 
 
-    school: Mapped['School'] = relationship('School', back_populates='students') 
-    group: Mapped['Group'] = relationship('Group', back_populates='students')
-    
-    __mapper_args__={
+    id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id', ondelete='CASCADE'), nullable=True)
+    group_id: Mapped[int] = mapped_column(Integer, ForeignKey('groups.id', ondelete='CASCADE'), nullable=True)
+
+    school: Mapped['School'] = relationship('School',back_populates='students',passive_deletes=True)
+    group: Mapped['Group'] = relationship('Group', back_populates='students', passive_deletes=True)
+
+    __mapper_args__ = {
         'polymorphic_identity': 'student'
     }
