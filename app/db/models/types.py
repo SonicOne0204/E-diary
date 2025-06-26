@@ -6,7 +6,7 @@ from app.db.models.users import User
 from app.db.models.schools import School
 from app.db.models.roles import Role
 from app.db.models.groups import Group
-
+from app.db.models.associations import subject_teacher
 # Teacher, Student inherit from User model, because it is filled through polymorphysm 
 
 class Teacher(User):
@@ -17,6 +17,7 @@ class Teacher(User):
 
     school: Mapped['School'] = relationship('School', back_populates='teachers', passive_deletes=True) 
     role: Mapped['Role'] = relationship('Role', back_populates='teachers', passive_deletes=True)
+    subjects: Mapped['Subject'] = relationship('Subject', back_populates='teachers', secondary=subject_teacher)
 
     __mapper_args__ = {
         'polymorphic_identity': 'teacher'

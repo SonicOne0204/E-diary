@@ -15,4 +15,5 @@ class School(model):
     principals: Mapped[list['Principal']] = relationship('Principal', back_populates='school', passive_deletes=True)
     teachers: Mapped[list['Teacher']] = relationship('Teacher', back_populates='school', passive_deletes=True)
     students: Mapped[list['Student']] = relationship('Student', back_populates='school', passive_deletes=True)
-    groups: Mapped[list['Group']] = relationship('Group', back_populates='school_group', passive_deletes=True)
+    groups: Mapped[list['Group']] = relationship('Group', back_populates='school', passive_deletes=True)
+    subjects: Mapped[list['Subject']] = relationship('Subject', back_populates='school', passive_deletes=True)

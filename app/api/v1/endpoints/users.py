@@ -27,6 +27,7 @@ def get_id(db: Annotated[Session, Depends(get_db)], username: str):
 def delete(db: Annotated[Session, Depends(get_db)], user_id: Annotated[int, Path()]):
     try:
         UsersCRUD.delete_user(db=db, user_id=user_id)
+        return {f'User with id {user_id}': 'deleted'}
     except ValueError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No such user')
     except Exception as e:
