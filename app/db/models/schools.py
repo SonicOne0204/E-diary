@@ -17,3 +17,4 @@ class School(model):
     students: Mapped[list['Student']] = relationship('Student', back_populates='school', passive_deletes=True)
     groups: Mapped[list['Group']] = relationship('Group', back_populates='school', passive_deletes=True)
     subjects: Mapped[list['Subject']] = relationship('Subject', back_populates='school', passive_deletes=True)
+    homeworks: Mapped[list['Homework']] = relationship('Homework', back_populates='school', passive_deletes=True)

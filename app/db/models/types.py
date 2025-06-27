@@ -17,7 +17,8 @@ class Teacher(User):
 
     school: Mapped['School'] = relationship('School', back_populates='teachers', passive_deletes=True) 
     role: Mapped['Role'] = relationship('Role', back_populates='teachers', passive_deletes=True)
-    subjects: Mapped['Subject'] = relationship('Subject', back_populates='teachers', secondary=subject_teacher)
+    subjects: Mapped[list['Subject']] = relationship('Subject', back_populates='teachers', secondary=subject_teacher)
+    homeworks: Mapped[list['Homework']] = relationship('Homework', back_populates='teacher')
 
     __mapper_args__ = {
         'polymorphic_identity': 'teacher'
