@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.crud.users import UsersCRUD
 from app.db.core import get_db
+from app.schemas.users import UserOut
 
 import logging
 logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ users_router = APIRouter(
     tags=['users']
 )
                 
-@users_router.get('/get-id', status_code=status.HTTP_202_ACCEPTED)
+@users_router.get('/get-id', status_code=status.HTTP_202_ACCEPTED, response_model=UserOut)
 def get_id(db: Annotated[Session, Depends(get_db)], username: str):
     try:
         return UsersCRUD.get_user_id(db=db, username=username)

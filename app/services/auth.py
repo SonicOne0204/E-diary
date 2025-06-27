@@ -35,22 +35,20 @@ def register_teacher(db: Session, user_data: TeacherRegistrationData):
     user = db.query(User).filter(User.username == username).one_or_none()
     if user:
         raise UserExists()
-    if type == 'admin':    
+    if user_data.type == 'admin':    
         raise RoleNotAllowed('Cannot register as admin. Forbidden')
-    hashed_password = hash_password(password)
     user_dict = user_data.model_dump()
     user_dict['hashed_password'] = user_dict.pop('password')
-    user = User(** user_dict)
-    user.hashed_password = hashed_password
+    user = Teacher(** user_dict)
+    user.hashed_password =  hash_password(password)
     db.add(user)
     db.commit()
     db.refresh(user)
     return {
-    username: {
-            'username': username,
-            'role_id': type
-        }
+        'username': username,
+        'role_id': user.role_id
     }
+    
 
 def register_student(db: Session, user_data: StudentRegistrationData):
     username = user_data.username
@@ -83,14 +81,12 @@ def register_principal(db: Session, user_data: PrincipalRegistrationData):
     hashed_password = hash_password(password)
     user_dict = user_data.model_dump()
     user_dict['hashed_password'] = user_dict.pop('password')
-    user = User(** user_dict)
+    user = Principal(** user_dict)
     user.hashed_password = hashed_password
     db.add(user)
     db.commit()
     db.refresh(user)
     return {
-    username: {
-            'username': username,
-            'role_id': type
-        }
-    }
+        'username': username,
+        'school_id': user.school_id 
+            }

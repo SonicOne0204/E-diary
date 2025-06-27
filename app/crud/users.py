@@ -15,7 +15,7 @@ class UsersCRUD():
         user = db.query(User).filter(User.username == username).one_or_none()
         if user == None:
             raise ValueError('User not found')
-        return { 'user_id': user.id }
+        return user
 
     @staticmethod
     def delete_user(db: Session, user_id: int):
