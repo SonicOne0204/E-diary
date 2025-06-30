@@ -1,0 +1,2 @@
+class HomeworkNotFound(Exception):
+    pass
