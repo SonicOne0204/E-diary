@@ -63,6 +63,8 @@ class HomeworkCRUD():
     def update_homework(db: Session, homework_id: int, data: HomeworkDataUpdate):
         try:
             homework: Homework = db.query(Homework).get(homework_id)
+            if not homework:
+                raise HomeworkNotFound('Homework not found')
             group: Group = db.query(Group).get(data.group_id)
             teacher: Teacher = db.query(Teacher).get(data.teacher_id)
             if group.school_id != homework.school_id:
@@ -76,7 +78,7 @@ class HomeworkCRUD():
                 parsed_dt = datetime.fromisoformat(data.due_date)
             else:
                 parsed_dt = data.due_date
-            homework.due_date = parsed_dt
+            homework.due_date = parsed_dt.replace(microsecond=0, second=0)
             for key, value in data_dict.items():
                 setattr(homework, key, value)
             db.add(homework)

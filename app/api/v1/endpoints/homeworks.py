@@ -5,7 +5,7 @@ from typing import Annotated
 
 from app.crud.homeworks import HomeworkCRUD
 from app.db.core import get_db
-from app.schemas.homeworks import HomeworkData
+from app.schemas.homeworks import HomeworkData, HomeworkDataUpdate
 from app.db.models.homeworks import Homework
 from app.exceptions.homeworks import HomeworkNotFound
 
@@ -86,7 +86,7 @@ def delete_homework(db: Annotated[Session, Depends(get_db)], homework_id: int):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 @homeworks_router.patch('/{homework_id}')
-def update_homework(db: Annotated[Session, Depends(get_db)], homework_id: int, data: HomeworkData):
+def update_homework(db: Annotated[Session, Depends(get_db)], homework_id: int, data: HomeworkDataUpdate):
     try:
         updated_homework = HomeworkCRUD.update_homework(db=db, homework_id=homework_id, data=data)
         return updated_homework
