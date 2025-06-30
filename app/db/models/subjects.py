@@ -12,5 +12,6 @@ class Subject(model):
     name: Mapped[str] = mapped_column(String)
     school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id', ondelete='CASCADE'))
 
+    homeworks: Mapped[list['Homework']] = relationship('Homework', back_populates='subjects', passive_deletes=True)
     teachers: Mapped[list['Teacher']] = relationship('Teacher', back_populates='subjects', secondary=subject_teacher)
-    school: Mapped['School'] = relationship('School', back_populates='subjects')
+    school: Mapped['School'] = relationship('School', back_populates='subjects', passive_deletes=True)
