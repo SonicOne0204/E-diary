@@ -1,0 +1,5 @@
+.env
+/diary_env
+/app/logging/E_diary.log
+__pycache__/
+*.py[cod]
