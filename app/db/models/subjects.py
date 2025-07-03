@@ -15,3 +15,4 @@ class Subject(model):
     homeworks: Mapped[list['Homework']] = relationship('Homework', back_populates='subjects', passive_deletes=True)
     teachers: Mapped[list['Teacher']] = relationship('Teacher', back_populates='subjects', secondary=subject_teacher)
     school: Mapped['School'] = relationship('School', back_populates='subjects', passive_deletes=True)
+    schedules: Mapped[list['Schedule']] = relationship('Schedule', back_populates='subject')

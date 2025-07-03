@@ -28,32 +28,10 @@ def add_homework(db: Annotated[Session, Depends(get_db)], data: HomeworkData):
         logger.exception(f'Unexpected error occured:{e}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-@homeworks_router.get('/schools/{school_id}')
-def get_homeworks_by_school(db: Annotated[Session, Depends(get_db)], school_id: int):
+@homeworks_router.get('/')
+def get_homeworks(db: Annotated[Session, Depends(get_db)], school_id: int | None = None, group_id: int | None = None, teacher_id: int | None = None):
     try:
-        homeworks: list[Homework] = HomeworkCRUD.get_homeworks_id(db=db, school_id=school_id)
-        return homeworks
-    except HomeworkNotFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='homeworks not found')
-    except Exception as e:
-        logger.exception(f'Unexpected error occured:{e}')
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@homeworks_router.get('/groups/{group_id}')
-def get_homeworks_by_group(db: Annotated[Session, Depends(get_db)], group_id: int):
-    try:
-        homeworks: list[Homework] = HomeworkCRUD.get_homeworks_id(db=db, group_id=group_id)
-        return homeworks
-    except HomeworkNotFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='homeworks not found')
-    except Exception as e:
-        logger.exception(f'Unexpected error occured:{e}')
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-@homeworks_router.get('/teachers/{teacher_id}')
-def get_homeworks_by_teacher(db: Annotated[Session, Depends(get_db)], teacher_id: int):
-    try:
-        homeworks: list[Homework] = HomeworkCRUD.get_homeworks_id(db=db, teacher_id=teacher_id)
+        homeworks: list[Homework] = HomeworkCRUD.get_homeworks_id(db=db, school_id=school_id, group_id=group_id, teacher_id=teacher_id)
         return homeworks
     except HomeworkNotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='homeworks not found')
@@ -66,8 +44,6 @@ def get_homework(db: Annotated[Session, Depends(get_db)], homework_id: int):
     try:
         homework = HomeworkCRUD.get_homework_id(db=db, homework_id=homework_id)
         return homework
-    except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f'No such school with id {homework.school_id}')
     except Exception as e:
         logger.exception(f'Unexpected error occured:{e}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
