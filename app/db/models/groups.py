@@ -14,3 +14,4 @@ class Group(model):
     homeworks: Mapped[list['Homework']] = relationship('Homework', back_populates='group', passive_deletes=True)
     school: Mapped['School'] = relationship('School', back_populates='groups', passive_deletes=True) 
     students: Mapped[list['Student']] = relationship('Student', back_populates='group', passive_deletes=True)# type: ignore
+    schedule: Mapped['Schedule'] = relationship('Schedule', back_populates='group', uselist=False)
