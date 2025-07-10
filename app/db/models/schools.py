@@ -11,6 +11,7 @@ class School(model):
     country: Mapped[str] = mapped_column(String)
     address: Mapped[str] = mapped_column(String)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    grade_system: Mapped[str] = mapped_column(String, nullable=True)
 
     principals: Mapped[list['Principal']] = relationship('Principal', back_populates='school', passive_deletes=True)
     teachers: Mapped[list['Teacher']] = relationship('Teacher', back_populates='school', passive_deletes=True)
