@@ -29,3 +29,4 @@ class Schedule(model):
     subject: Mapped['Subject'] = relationship('Subject', back_populates='schedules')
     teacher: Mapped['Teacher'] = relationship('Teacher', back_populates='schedules')  
     attendance: Mapped['Attendance'] = relationship('Attendance', back_populates='schedule', uselist=False)
+    grades: Mapped[list['Grade']] = relationship('Grade', back_populates='schedule')

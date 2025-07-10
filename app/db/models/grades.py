@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, ForeignKey, Boolean, DateTime, Float
+from sqlalchemy import String, Integer, ForeignKey, Boolean, DateTime, Float, UniqueConstraint
 from datetime import datetime, date, timezone
 
 from app.db.core import model
@@ -25,6 +25,10 @@ class Grade(model):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(tz=timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
 
-    student: Mapped['Student'] = relationship('Student', back_populates='grade')
-    schedule: Mapped['Schedule'] = relationship('Schedule', back_populates='grade')
-    teacher: Mapped['Teacher'] = relationship('Teacher', back_populates='grade')
+    student: Mapped['Student'] = relationship('Student', back_populates='grades')
+    schedule: Mapped['Schedule'] = relationship('Schedule', back_populates='grades')
+    teacher: Mapped['Teacher'] = relationship('Teacher', back_populates='grades')
+
+    __table_args__ = (
+        UniqueConstraint('schedule_id', 'student_id', name='uniqueconst_schedule_student'),
+    )
