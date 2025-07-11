@@ -8,6 +8,7 @@ from app.db.core import get_db
 from app.schemas.schedules import ScheduleData, ScheduleUpdateData
 from app.db.models.schedules import Schedule
 from app.exceptions.schedules import ScheduleNotFound
+from app.dependecies.auth import check_role
 
 import logging
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ schedules_router = APIRouter(
     tags=['schedules']
 )
 
-@schedules_router.post('/')
+@schedules_router.post('/', dependencies=[Depends(check_role('principal'))])
 def add_schedule(db: Annotated[Session, Depends(get_db)], data: ScheduleData):
     try:
         schedule = ScheduleCRUD.create_schedule(db=db, data=data)

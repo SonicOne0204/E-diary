@@ -1,6 +1,7 @@
 from fastapi import status, Depends, APIRouter, HTTPException, Body
 from sqlalchemy.orm import Session
 from typing import Annotated, Union
+from fastapi.security import OAuth2PasswordRequestForm
 
 import logging 
 
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 @auth_router.post('/login', status_code=status.HTTP_200_OK ,response_model=Token)
-def login(db: Annotated[Session, Depends(get_db)] ,user_data: LoginData) -> Token:
+def login(db: Annotated[Session, Depends(get_db)] ,user_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
     try:
         token = login_user(db=db, user_data=user_data)
         return token

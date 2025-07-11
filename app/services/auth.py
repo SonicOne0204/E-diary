@@ -1,29 +1,40 @@
 from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import Annotated
+from jose import jwt
+from jose.exceptions import JWTError
 
 from app.core.security import verify_password, hash_password, create_access_token
 from app.db.models.users import User
 from app.db.models.types import Student, Teacher, Principal
 from app.db.core import get_db
 from app.schemas.auth import Token, RegistrationData, LoginData, TeacherRegistrationData, StudentRegistrationData, PrincipalRegistrationData
-from app.exceptions.auth import RoleNotAllowed, UserExists
+from app.exceptions.auth import RoleNotAllowed, UserExists, UserDoesNotExist
+from app.core.settings import settings
+
+import logging
+logger = logging.getLogger(__name__)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 
 
-def login_user(db: Session ,user_data: LoginData) -> Token:
+def login_user(db: Session ,user_data: OAuth2PasswordRequestForm) -> Token:
     username = user_data.username
     password = user_data.password
     user = db.query(User).filter(User.username == username).first()
     if user == None:
-        raise ValueError('User not found')
+        raise UserDoesNotExist('User not found')
     verify = verify_password(password, user.hashed_password)
     if verify:
-        user_data = {
-            'sub': user.username 
+        payload = {
+            'id': user.id,
+            'username': user.username,
+            'role': user.type 
         }
-        access_token = create_access_token(user_data)
+        access_token = create_access_token(payload)
         token = Token(access_token=access_token, token_type='Bearer')
         return token 
     else:
@@ -90,3 +101,16 @@ def register_principal(db: Session, user_data: PrincipalRegistrationData):
         'username': username,
         'school_id': user.school_id 
             }
+
+
+def get_current_user(db:Annotated[Session, Depends(get_db)], token: Annotated[str, Depends(oauth2_scheme)]) -> User:
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
+        user = db.query(User).get(payload.get('id'))
+        if user == None:
+            logger.info(f'User with id {payload["id"]} does not exist')
+            raise UserDoesNotExist('User dose not exist')
+        return user
+    except JWTError as e:
+        logger.info(f'Invalid token passed: {e}')
+        raise

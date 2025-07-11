@@ -1,7 +1,7 @@
 from enum import Enum
 from pydantic import BaseModel
 
-class UserType(str, Enum):
+class UserTypes(str, Enum):
     admin = 'admin'
     teacher = 'teacher'
     student = 'student'

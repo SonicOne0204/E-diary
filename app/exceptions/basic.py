@@ -5,3 +5,4 @@ class AlreadyExistsError(Exception):
 
 class NoDataError(Exception):
     pass
+

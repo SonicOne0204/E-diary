@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from app.schemas.users import UserType
+from app.schemas.users import UserTypes
 from typing import Literal
 
 class Token(BaseModel):
@@ -12,7 +12,7 @@ class RegistrationData(BaseModel):
     email: str
     first_name: str
     last_name: str
-    type: UserType
+    type: UserTypes
 
 class TeacherRegistrationData(RegistrationData):
     type: Literal['teacher']
