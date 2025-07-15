@@ -1,8 +1,8 @@
 class AlreadyExistsError(Exception):
-    def __init__(self):
-        self.message = 'This data already exists'
-        super().__init__(self.message)
+    pass
 
 class NoDataError(Exception):
     pass
 
+class NotAllowed(Exception):
+    pass

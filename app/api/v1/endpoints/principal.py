@@ -8,13 +8,16 @@ from app.db.core import get_db
 from app.schemas.principals import AssignStudentByIdSchoolModel, AssignTeacherByIdSchoolModel, AssingStudentByIdGroupModel, AssingTeacherByIdSubjectModel
 from app.exceptions.teachers import TeacherAlreadyAssigned, TeacherNotFound
 from app.exceptions.students import StudentAlreadyAssigned, StudentNotFound
+from app.schemas.users import UserTypes
+from app.dependecies.auth import check_role
 
 import logging
 logger = logging.getLogger(__name__)
 
 principal_router = APIRouter(
     prefix='/principal',
-    tags=['principal']
+    tags=['principal'],
+    dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))]
     )
 
 @principal_router.post(path='/assign-teacher')

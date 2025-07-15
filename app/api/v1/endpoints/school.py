@@ -7,6 +7,8 @@ from app.db.core import get_db
 from app.crud.schools import SchoolCRUD
 from app.schemas.schools import SchoolData, SchoolOut, SchoolUpdate, SchoolUpdateOut
 from app.exceptions.school import SchoolNotFound
+from app.dependecies.auth import check_role
+from app.schemas.users import UserTypes
 
 import logging
 
@@ -14,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 school_router = APIRouter(
     prefix='/schools', 
-    tags=['school']
+    tags=['school'],
+    dependencies=[Depends(check_role(UserTypes.admin))]
     )
 
 

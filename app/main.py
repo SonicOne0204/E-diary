@@ -1,5 +1,9 @@
 from fastapi import FastAPI
+from fastapi import FastAPI, status, Request
+from fastapi.responses import JSONResponse
 
+
+from app.exceptions.auth import RoleNotAllowed
 from app.api.v1.endpoints.auth import auth_router
 from app.api.v1.endpoints.users import users_router
 from app.api.v1.endpoints.school import school_router
@@ -10,6 +14,7 @@ from app.api.v1.endpoints.homeworks import homeworks_router
 from app.api.v1.endpoints.schedules import schedules_router
 from app.api.v1.endpoints.teacher import teacher_router
 from app.api.v1.endpoints.attendance import attendances_router
+
 from app.logging.logger import *
 
 app = FastAPI()
@@ -24,3 +29,10 @@ app.include_router(homeworks_router)
 app.include_router(schedules_router)
 app.include_router(teacher_router)
 app.include_router(attendances_router)
+
+@app.exception_handler(RoleNotAllowed)
+def role_exception_handler(request: Request, exc: RoleNotAllowed):
+    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={'detail': f"role '{exc.role}' is not allowed"})
+
+
+

@@ -11,9 +11,13 @@ from app.exceptions.auth import RoleNotAllowed
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
-def check_role(required_role: UserTypes):
+def check_role(required_roles: list[UserTypes] | UserTypes):
     def role_checker(user: Annotated[User, Depends(get_current_user)]):
-        if user.type == required_role:
-            return user
-        raise RoleNotAllowed(f'Role {user.type} is not allowed here')
+        if isinstance(required_roles, list):
+            if user.type in required_roles :
+                return user
+        else:
+            if user.type == required_roles:
+                return user
+        raise RoleNotAllowed(user.type)
     return role_checker
