@@ -14,6 +14,7 @@ from app.api.v1.endpoints.homeworks import homeworks_router
 from app.api.v1.endpoints.schedules import schedules_router
 from app.api.v1.endpoints.teacher import teacher_router
 from app.api.v1.endpoints.attendance import attendances_router
+from app.api.v1.endpoints.student import student_router
 
 from app.logging.logger import *
 
@@ -29,6 +30,7 @@ app.include_router(homeworks_router)
 app.include_router(schedules_router)
 app.include_router(teacher_router)
 app.include_router(attendances_router)
+app.include_router(student_router)
 
 @app.exception_handler(RoleNotAllowed)
 def role_exception_handler(request: Request, exc: RoleNotAllowed):

@@ -3,14 +3,14 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.db.models.schools import School
 from app.db.models.groups import Group
-from app.db.models.types import Teacher, Student
+from app.db.models.types import Teacher, Student, Principal
 from app.db.models.users import User
 from app.db.models.subjects import Subject
 from app.db.models.associations import subject_teacher
 from app.db.models.invitations import Invitation
 from app.exceptions.teachers import TeacherAlreadyAssigned, TeacherNotInTable
 from app.exceptions.students import StudentAlreadyAssigned, StudentNotInTable
-from app.exceptions.basic import AlreadyExistsError, NotFound
+from app.exceptions.basic import AlreadyExistsError, NotFound, NotAllowed
 
 import logging
 logger = logging.getLogger(__name__)
@@ -81,18 +81,24 @@ class PrincipalService():
             raise
 
     @staticmethod
-    def link_student_to_group_id(db: Session, group_id: int, student_id: int):
+    def link_student_to_group_id(db: Session, user: User ,group_id: int, student_id: int):
         try:
-            userside_student = db.query(User).get(student_id)
+            userside_student: User = db.query(User).get(student_id)
             if userside_student == None:
-                raise NotFound()
+                raise NotFound() 
             if userside_student.type != 'student':
                 raise NotFound()
-            student = db.query(Student).get(userside_student.id)
+            student: Student = db.query(Student).get(userside_student.id)
+            principal: Principal = db.query(Principal).get(user.id)
+            group: Group = db.query(Group).get(group_id)
             if student == None:
                 raise StudentNotInTable(student_id=userside_student.id)
             if student.group_id != None:
                 raise StudentAlreadyAssigned(student_id=student.id, group_id=student.group_id)
+            if student.school_id != principal.school_id:
+                raise NotAllowed('Cannot asign students from other schools')
+            if group.school_id != principal.school_id:
+                raise NotAllowed('Cannot asign groups from other schools')
             student.group_id = group_id
             db.commit()
             db.refresh(student)
@@ -109,20 +115,23 @@ class PrincipalService():
             logger.exception(f'Unexpected error occured: {e}')
             raise
     @staticmethod
-    def link_teacher_to_subject_id(db: Session, teacher_id: int, subject_id: int):
+    def link_teacher_to_subject_id(db: Session, user: User , teacher_id: int, subject_id: int):
         try:
             subject: Subject = db.query(Subject).get(subject_id)
             teacher: Teacher = db.query(User).get(teacher_id)
+            principal: Principal = db.query(Principal).get(user.id)
             if teacher == None:
                 raise NotFound('User not found')
             if teacher.type != 'teacher':
                 raise NotFound('User is not teacher')
             if subject == None:
                 raise NotFound('Subject not found')
-                db.execute(
-                    subject_teacher.insert().values(teacher_id=teacher.id, subject_id=subject.id)
-                )
-                db.commit() 
+            if teacher.school_id != principal.school_id:
+                raise NotAllowed('Cannot asign teachers from other schools')
+            if subject.school_id != principal.school_id:
+                raise NotAllowed('Cannot asign subjects from other schools')
+            db.execute(subject_teacher.insert().values(teacher_id=teacher.id, subject_id=subject.id))
+            db.commit() 
         except SQLAlchemyError as e:
             db.rollback()
             logger.error(f'Error in DB: {e}')

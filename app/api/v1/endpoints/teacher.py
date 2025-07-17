@@ -65,9 +65,12 @@ def accept_invitation_endpoint(invitation_id: int,db: Annotated[Session, Depends
 ):
     try:
         return TeacherService.accept_invitation(db=db, user=user, invitation_id=invitation_id)
-    except NotFound:
-        raise HTTPException(status_code=404, detail="Invitation not found")
+    except NotFound as e:
+        if 'invitation' in str(e).lower():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invitation not found")
+        if 'teacher' in str(e).lower():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Teacher not found")
     except NotAllowed as e:
-        raise HTTPException(status_code=403, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except Exception:
         raise HTTPException(status_code=500, detail="Internal server error")

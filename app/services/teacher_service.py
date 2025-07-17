@@ -107,8 +107,11 @@ class TeacherService():
                 raise NotAllowed('Cannot accept another user\'s invitation')
             logger.info(f'User with id {user.id} accepted invitation sent by user with id{invitation.invited_by_id} to school with id {invitation.school_id}')
             invitation.status = Invitation_status.accepted
-            student: Student = db.query(Student).get(user.id)
-            student.school_id ==invitation.school_id
+            teacher: Teacher = db.query(Teacher).get(user.id)
+            if teacher == None:
+                logger.info(f'Teacher with id {user.id} is not found')
+                raise NotFound('Teacher is not found')
+            teacher.school_id = invitation.school_id
             db.commit()
             return {'detail': 'Invitation accepted'}
         except Exception as e:
