@@ -5,8 +5,6 @@ from datetime import datetime, timezone
 from app.db.models.attendance import Attendance
 from app.db.models.groups import Group
 from app.db.models.types import Teacher, Student
-from app.exceptions.groups import GroupNotAllowed
-from app.exceptions.teachers import TeacherNotAllowed
 from app.exceptions.attendance import AttendanceNotFound
 from app.schemas.attendance import StatusOptions
 
@@ -30,6 +28,9 @@ class AttendanceCRUD():
         except SQLAlchemyError as e:
             logger.error(f'Error in db: {e}')
             raise
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
+            raise
 
 
     @staticmethod
@@ -52,6 +53,9 @@ class AttendanceCRUD():
         except SQLAlchemyError as e:
             logger.error(f'Error in db: {e}')
             raise
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
+            raise
 
     @staticmethod
     def get_attendance_id(db: Session, attendance_id: int):
@@ -62,4 +66,7 @@ class AttendanceCRUD():
             raise
         except SQLAlchemyError as e:
             logger.error(f'Error in db: {e}')
+            raise
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
             raise

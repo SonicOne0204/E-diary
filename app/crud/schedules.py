@@ -8,12 +8,7 @@ from datetime import datetime, date, timezone
 
 from app.schemas.schedules import ScheduleData, ScheduleUpdateData
 from app.schemas.users import UserTypes
-from app.exceptions.schedules import ScheduleNotFound
-from app.exceptions.subject import SubjectNotFound
-from app.exceptions.teachers import TeacherNotFound
-from app.exceptions.school import SchoolNotFound
-from app.exceptions.groups import GroupNotFound
-from app.exceptions.basic import NotAllowed
+from app.exceptions.basic import NotAllowed, NotFound
 from app.db.models.types import Student, Teacher
 from app.db.models.schedules import Schedule
 from app.db.models.attendance import Attendance
@@ -61,16 +56,16 @@ class ScheduleCRUD():
             principal: Principal = db.query(Principal).get(user.id)
             if not subject:
                 logger.info(f'Subject with id {data.subject_id} not found')
-                raise SubjectNotFound('Subject not found')
+                raise NotFound('Subject not found')
             if not teacher:
                 logger.info(f'Teacher with id {data.teacher_id} not found')
-                raise TeacherNotFound('Teacher not found')
+                raise NotFound('Teacher not found')
             if not group:
                 logger.info(f'Group with id {data.group_id} not found')
-                raise GroupNotFound('Group not found')
+                raise NotFound('Group not found')
             if not school:
                 logger.info(f'School with id {data.school_id} not found')
-                raise SchoolNotFound('School not found')
+                raise NotFound('School not found')
             if data.school_id != principal.school_id and user.type == UserTypes.principal:
                 logger.warning(f'Principal with id {principal.id} cannot asign schedule to school {school.id}')
                 raise NotAllowed('Cannot asign schedule to another school')
@@ -93,7 +88,7 @@ class ScheduleCRUD():
             schedule: Schedule = db.query(Schedule).get(schedule_id)
             if not schedule:
                 logger.info(f'schedule with id {schedule_id} not found')
-                raise ScheduleNotFound('Schedule not found')
+                raise NotFound('Schedule not found')
             return schedule
         except Exception as e:
             logger.exception(f'Unexpected error occured: {e}')
@@ -140,7 +135,7 @@ class ScheduleCRUD():
             schedule: Schedule = db.query(Schedule).get(schedule_id)
             if not schedule:
                 logger.info(f'schedule with id {schedule_id} not found')
-                raise ScheduleNotFound('Schedule not found')
+                raise NotFound('Schedule not found')
             if user.type == UserTypes.principal:
                 principal: Principal = db.query(Principal).get(user.id)
                 if schedule.school_id != principal.school_id:

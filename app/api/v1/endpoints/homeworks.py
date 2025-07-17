@@ -7,7 +7,7 @@ from app.crud.homeworks import HomeworkCRUD
 from app.db.core import get_db
 from app.schemas.homeworks import HomeworkData, HomeworkDataUpdate
 from app.db.models.homeworks import Homework
-from app.exceptions.homeworks import HomeworkNotFound
+from app.exceptions.basic import NotFound, NotAllowed
 
 import logging
 logger = logging.getLogger(__name__)
@@ -20,12 +20,13 @@ homeworks_router = APIRouter(
 @homeworks_router.post('/', response_model=HomeworkData)
 def add_homework(db: Annotated[Session, Depends(get_db)], data: HomeworkData):
     try:
-        homework = HomeworkCRUD.add_homework(db=db, data=data)
+        homework: Homework = HomeworkCRUD.add_homework(db=db, data=data)
         return homework
     except IntegrityError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f'No such school with id {homework.school_id}')
+    except NotAllowed:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Not allowed to give homework')
     except Exception as e:
-        logger.exception(f'Unexpected error occured:{e}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @homeworks_router.get('/')
@@ -33,10 +34,9 @@ def get_homeworks(db: Annotated[Session, Depends(get_db)], school_id: int | None
     try:
         homeworks: list[Homework] = HomeworkCRUD.get_homeworks_id(db=db, school_id=school_id, group_id=group_id, teacher_id=teacher_id)
         return homeworks
-    except HomeworkNotFound:
+    except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='homeworks not found')
     except Exception as e:
-        logger.exception(f'Unexpected error occured:{e}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @homeworks_router.get('/{homework_id}')
@@ -45,7 +45,6 @@ def get_homework(db: Annotated[Session, Depends(get_db)], homework_id: int):
         homework = HomeworkCRUD.get_homework_id(db=db, homework_id=homework_id)
         return homework
     except Exception as e:
-        logger.exception(f'Unexpected error occured:{e}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @homeworks_router.delete('/{homework_id}')
@@ -53,12 +52,11 @@ def delete_homework(db: Annotated[Session, Depends(get_db)], homework_id: int):
     try:
         HomeworkCRUD.delete_homework(db=db, homework_id=homework_id)
         return {"detail": f"Homework with id {homework_id} was deleted"}
-    except HomeworkNotFound:
+    except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='homework not found')
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Cannot delete: related records exist")
     except Exception as e:
-        logger.exception(f'Unexcpected error occured: {e}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 @homeworks_router.patch('/{homework_id}')
@@ -68,6 +66,7 @@ def update_homework(db: Annotated[Session, Depends(get_db)], homework_id: int, d
         return updated_homework
     except IntegrityError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Can't update data. Please check data validity")
+    except NotAllowed:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Not allowed to give homework')
     except Exception as e:
-        logger.exception(f'Unexcpected error occured: {e}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.db.models import Subject
 from app.schemas.subjects import SubjectData, SubjectUpdate
-from app.exceptions.subject import SubjectNotFound
+from app.exceptions.basic import NotFound
 
 import logging
 
@@ -23,31 +23,38 @@ class SubjectCRUD():
         except IntegrityError as e:
             db.rollback()
             logger.error(f'Integrity error occured: {e}')
-            raise ValueError(f'This subject name already exists: {subject.name}')
+            raise
         except SQLAlchemyError as e:
             db.rollback()
             logger.error(f'Error getting db: {e}')
-            raise RuntimeError('Error in DB')
+            raise
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
+            raise
         
     @staticmethod
     def delete_subject(db: Session, subject_id: int):
         subject: Subject = db.query(subject).get(subject_id)
         if subject == None:
-            raise SubjectNotFound()
+            raise NotFound()
         db.delete(subject)
         try:
             db.commit()
             logger.info(f'subject with name {subject.name} is deleted')
             return {f'subject id {subject_id}': 'Deleted succesfully'}
         except SQLAlchemyError as e:
+            db.rollback()
             logger.error(f'DB error occured: {e}')
             raise RuntimeError('Error in DB occured')
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
+            raise
         
     @staticmethod
     def update_subject_data(db: Session, subject_id: int , data: SubjectUpdate):
         subject: Subject = db.query(Subject).get(subject_id)
         if subject == None:
-            raise subjectNotFound('No such subject')
+            raise NotFound('No such subject')
         try:
             for key, value in data.model_dump(exclude_unset=True).items():
                 setattr(subject, key, value)
@@ -64,7 +71,11 @@ class SubjectCRUD():
         
     @staticmethod
     def get_subject(db: Session, name: str):
-        subject = db.query(Subject).filter(Subject.name == name).one_or_none()
-        if subject == None:
-            raise SubjectNotFound()
-        return subject
+        try:
+            subject = db.query(Subject).filter(Subject.name == name).one_or_none()
+            if subject == None:
+                raise NotFound()
+            return subject
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
+            raise

@@ -20,3 +20,4 @@ class School(model):
     subjects: Mapped[list['Subject']] = relationship('Subject', back_populates='school', passive_deletes=True)
     homeworks: Mapped[list['Homework']] = relationship('Homework', back_populates='school', passive_deletes=True)
     schedules: Mapped[list['Schedules']] = relationship('Schedule', back_populates='school')
+    invitations: Mapped[list['Invitation']] = relationship('Invitation', back_populates='school')

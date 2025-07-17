@@ -6,12 +6,13 @@ from app.db.models.schedules import Schedule
 from app.db.models.types import Student, Teacher
 from app.db.models.attendance import Attendance
 from app.db.models.grades import Grade
-from app.exceptions.schedules import ScheduleNotFound
-from app.exceptions.students import StudentNotFound
-from app.exceptions.basic import NoDataError
-from app.exceptions.teachers import TeacherNotFound
+from app.exceptions.basic import NoDataError, NotFound, NotAllowed
 from app.schemas.attendance import StatusOptions
 from app.schemas.grades import AssignGradeData, GradeSystems
+from app.schemas.invitations import Invitation_status
+from app.dependecies.invitations import get_invitations
+from app.db.models.users import User
+from app.db.models.invitations import Invitation
 
 
 import logging
@@ -26,11 +27,11 @@ class TeacherService():
             student = db.query(Student).get(student_id)
             teacher = db.query(Teacher).get(teacher_id)
             if lesson == None:
-                raise ScheduleNotFound('Schedule not found')
+                raise NotFound('Schedule not found')
             if student == None:
-                raise StudentNotFound('Student not found')
+                raise NotFound('Student not found')
             if teacher == None:
-                raise TeacherNotFound('Teacher not found')
+                raise NotFound('Teacher not found')
             
             query = db.query(Attendance).filter(Attendance.schedule_id == lesson_id)
             attendance = query.filter(Attendance.student_id == student_id).one_or_none()
@@ -89,9 +90,29 @@ class TeacherService():
             raise
         except SQLAlchemyError as e:
             db.rollback()
-            logger.error(f'Error in dg: {e}')
+            logger.error(f'Error in db: {e}')
             raise
         except Exception as e:
             logging.exception(f'Unexpected error occured: {e}')
             raise
             
+    @staticmethod
+    def accept_invitation(db: Session, user: User , invitation_id: int):
+        try:
+            invitation: Invitation = db.query(Invitation).get(invitation_id)
+            if invitation_id == None:
+                logger.info(f'Invitation with id {invitation_id} not found')
+                raise NotFound('Invitation not found')
+            if invitation.invited_user_id != user.id:
+                raise NotAllowed('Cannot accept another user\'s invitation')
+            logger.info(f'User with id {user.id} accepted invitation sent by user with id{invitation.invited_by_id} to school with id {invitation.school_id}')
+            invitation.status = Invitation_status.accepted
+            student: Student = db.query(Student).get(user.id)
+            student.school_id ==invitation.school_id
+            db.commit()
+            return {'detail': 'Invitation accepted'}
+        except Exception as e:
+            logging.exception(f'Unexpected error occured: {e}')
+            raise
+        
+        

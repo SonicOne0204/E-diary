@@ -1,7 +1,3 @@
-class TeacherNotFound(Exception):
-    def __init__(self):
-        message = 'teachers not found'
-        super().__init__(message)
 
 class TeacherAlreadyAssigned(Exception):
     def __init__(self, teacher_id: int, school_id: int):
@@ -13,5 +9,3 @@ class TeacherNotInTable(Exception):
         message = f'teacher with id {teacher_id} is in users table but not in teachers table'
         super().__init__(message)
 
-class TeacherNotAllowed(Exception):
-    pass

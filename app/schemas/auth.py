@@ -15,19 +15,22 @@ class RegistrationData(BaseModel):
     type: UserTypes
 
 class TeacherRegistrationData(RegistrationData):
-    type: Literal['teacher']
-    role_id: int | None = None
-    school_id: int | None = None
+    type: Literal[UserTypes.teacher]
 
 class StudentRegistrationData(RegistrationData):
-    type: Literal['student']
-    school_id: int | None = None
-    group_id: int | None = None
+    type: Literal[UserTypes.student]
 
 class PrincipalRegistrationData(RegistrationData):
-    type: Literal['principal']
+    type: Literal[UserTypes.principal]
     school_id: int | None = None
 
+class RegistrationDataOut(BaseModel):
+    id: int
+    username: str
+    email: str
+    first_name: str
+    last_name: str
+    type: UserTypes
 
 class LoginData(BaseModel):
     username: str

@@ -6,9 +6,8 @@ from app.schemas.homeworks import HomeworkData, HomeworkDataUpdate
 from app.db.models.homeworks import Homework
 from app.db.models.groups import Group
 from app.db.models.types import Teacher
-from app.exceptions.groups import GroupNotAllowed
-from app.exceptions.teachers import TeacherNotAllowed
-from app.exceptions.homeworks import HomeworkNotFound
+
+from app.exceptions.basic import NotAllowed, NotFound
 
 
 import logging
@@ -22,10 +21,10 @@ class HomeworkCRUD():
             teacher: Teacher = db.query(Teacher).get(data.teacher_id)
             if group.school_id != data.school_id:
                 logger.warning(f'Access denied while creating homework. Group with id {group.id} is assigned to school with id {group.school_id}. Not allowed to give homework')
-                raise GroupNotAllowed(f'Group with id {group.id} is assigned to school with id {group.school_id}. Not allowed to give homework')
+                raise NotAllowed(f'Group with id {group.id} is assigned to school with id {group.school_id}. Not allowed to give homework')
             if teacher.school_id != data.school_id:
                 logger.warning(f'Access denied while creating homework. Teacher with id {teacher.id} is assigned to school with id {teacher.school_id}. Not allowed to give homework')
-                raise TeacherNotAllowed(f'Teacher with id {teacher.id} is assinged to school with id {teacher.school_id}. Not allowed to give homework')
+                raise NotAllowed(f'Teacher with id {teacher.id} is assinged to school with id {teacher.school_id}. Not allowed to give homework')
             homework = Homework()
             data_dict = data.model_dump(exclude={'due_date'})
             if isinstance(data.due_date, str):
@@ -43,6 +42,9 @@ class HomeworkCRUD():
             db.rollback()
             logger.error(f'Error in db occured: {e}')
             raise
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
+            raise
 
     @staticmethod
     def delete_homework(db: Session, homework_id: int):
@@ -50,7 +52,7 @@ class HomeworkCRUD():
             homework = db.query(Homework).get(homework_id)
             if not homework:
                 logger.info(f'Homework with id {homework_id} is not found')
-                raise HomeworkNotFound(f'Homework with id {homework_id} not found')
+                raise NotFound(f'Homework with id {homework_id} not found')
             db.delete(homework)
             db.commit()
             logger.info(f'Homework with id {homework_id} was deleted')
@@ -58,21 +60,24 @@ class HomeworkCRUD():
         except SQLAlchemyError as e:
             logger.error(f'Error in db: {e}')
             raise
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
+            raise
 
     @staticmethod
     def update_homework(db: Session, homework_id: int, data: HomeworkDataUpdate):
         try:
             homework: Homework = db.query(Homework).get(homework_id)
             if not homework:
-                raise HomeworkNotFound('Homework not found')
+                raise NotFound('Homework not found')
             group: Group = db.query(Group).get(data.group_id)
             teacher: Teacher = db.query(Teacher).get(data.teacher_id)
             if group.school_id != homework.school_id:
                 logger.warning(f'Access denied while creating homework. Group with id {group.id} is assigned to school with id {group.school_id}. Not allowed to give homework')
-                raise GroupNotAllowed(f'Group with id {group.id} is assigned to school with id {group.school_id}. Not allowed to give homework')
+                raise NotAllowed(f'Group with id {group.id} is assigned to school with id {group.school_id}. Not allowed to give homework')
             if teacher.school_id != homework.school_id:
                 logger.warning(f'Access denied while creating homework. Teacher with id {teacher.id} is assigned to school with id {teacher.school_id}. Not allowed to give homework')
-                raise TeacherNotAllowed(f'Teacher with id {teacher.id} is assinged to school with id {teacher.school_id}. Not allowed to give homework')
+                raise NotAllowed(f'Teacher with id {teacher.id} is assinged to school with id {teacher.school_id}. Not allowed to give homework')
             data_dict = data.model_dump(exclude={'due_date'})
             if isinstance(data.due_date, str):
                 parsed_dt = datetime.fromisoformat(data.due_date)
@@ -92,6 +97,9 @@ class HomeworkCRUD():
             db.rollback()
             logger.error(f'Error in db occured: {e}')
             raise
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
+            raise
 
     @staticmethod
     def get_homeworks_id(db: Session, school_id: int | None = None, teacher_id: int | None =  None, group_id: int | None = None):
@@ -107,6 +115,9 @@ class HomeworkCRUD():
         except SQLAlchemyError as e:
             logger.error(f'Error in db: {e}')
             raise
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
+            raise
 
     @staticmethod
     def get_homework_id(db: Session, homework_id: int):
@@ -114,4 +125,7 @@ class HomeworkCRUD():
             return db.query(Homework).get(homework_id)
         except SQLAlchemyError as e:
             logger.error(f'Error in db: {e}')
+            raise
+        except Exception as e:
+            logger.exception(f'Unexpected error occured: {e}')
             raise

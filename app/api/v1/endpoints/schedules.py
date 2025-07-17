@@ -8,8 +8,7 @@ from app.db.core import get_db
 from app.schemas.schedules import ScheduleData, ScheduleUpdateData
 from app.db.models.schedules import Schedule
 from app.db.models.users import User
-from app.exceptions.schedules import ScheduleNotFound
-from app.exceptions.basic import NotAllowed
+from app.exceptions.basic import NotAllowed, NotFound
 from app.exceptions.auth import RoleNotAllowed
 from app.dependecies.auth import check_role
 from app.services.auth import get_current_user
@@ -28,7 +27,7 @@ def add_schedule(db: Annotated[Session, Depends(get_db)], data: ScheduleData):
     try:
         schedule = ScheduleCRUD.create_schedule(db=db, data=data)
         return schedule
-    except ScheduleNotFound:
+    except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     except NotAllowed:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Principal cannot access other schools')
@@ -40,7 +39,7 @@ def get_schedules_today(db: Annotated[Session, Depends(get_db)], user: Annotated
     try:
         schedules = ScheduleCRUD.get_schedule_today(db=db, user=user ,school_id=school_id, group_id=group_id, teacher_id=teacher_id)
         return schedules
-    except ScheduleNotFound:
+    except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='schedules not found')
     except NotAllowed:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Principal cannot access \'school_id\' query parameter')
@@ -52,7 +51,7 @@ def get_schedule(db: Annotated[Session, Depends(get_db)], schedule_id: int):
     try:
         schedule = ScheduleCRUD.get_schedule_id(db=db, schedule_id=schedule_id)
         return schedule
-    except ScheduleNotFound:
+    except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='schedules not found')
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -62,7 +61,7 @@ def delete_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[Use
     try:
         ScheduleCRUD.delete_schedule(db=db, user=user , schedule_id=schedule_id)
         return {"detail": f"schedule with id {schedule_id} was deleted"}
-    except ScheduleNotFound:
+    except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='schedule not found')
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Cannot delete: related records exist")

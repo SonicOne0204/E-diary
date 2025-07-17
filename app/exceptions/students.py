@@ -1,7 +1,4 @@
-class StudentNotFound(Exception):
-    def __init__(self):
-        message = 'Students not found'
-        super().__init__(message)
+
 
 class StudentAlreadyAssigned(Exception):
     def __init__(self, student_id: int, school_id: int | None = None, group_id: int | None = None):

@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
-class AssignTeacherByIdSchoolModel(BaseModel):
+class InviteTeacherByIdSchoolModel(BaseModel):
     school_id: int
     teacher_id: int
 
-class AssignStudentByIdSchoolModel(BaseModel):
+class InviteStudentByIdSchoolModel(BaseModel):
     school_id: int
     student_id: int
 

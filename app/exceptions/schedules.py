@@ -1,2 +1,0 @@
-class ScheduleNotFound(Exception):
-    pass
