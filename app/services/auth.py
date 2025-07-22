@@ -10,8 +10,8 @@ from app.core.security import verify_password, hash_password, create_access_toke
 from app.db.models.users import User
 from app.db.models.types import Student, Teacher, Principal
 from app.db.core import get_db
-from app.schemas.auth import Token, RegistrationData, LoginData, TeacherRegistrationData, StudentRegistrationData, PrincipalRegistrationData
-from app.exceptions.auth import RoleNotAllowed, UserExists, UserDoesNotExist
+from app.schemas.auth import Token, RegistrationData, LoginData, TeacherRegistrationData, StudentRegistrationData, PrincipalRegistrationData, UserTypes
+from app.exceptions.auth import RoleNotAllowed, UserExists, UserDoesNotExist, WrongPassword
 from app.core.settings import settings
 
 import logging
@@ -38,7 +38,7 @@ def login_user(db: Session ,user_data: OAuth2PasswordRequestForm) -> Token:
         token = Token(access_token=access_token, token_type='Bearer')
         return token 
     else:
-        raise ValueError('Wrong password')
+        raise WrongPassword('Wrong password')
 
 def register_teacher(db: Session, user_data: TeacherRegistrationData):
     username = user_data.username

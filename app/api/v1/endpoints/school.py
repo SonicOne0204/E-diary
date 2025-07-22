@@ -9,6 +9,8 @@ from app.schemas.schools import SchoolData, SchoolOut, SchoolUpdate, SchoolUpdat
 from app.exceptions.basic import NotFound
 from app.dependecies.auth import check_role
 from app.schemas.users import UserTypes
+from app.services.auth import get_current_user
+from app.db.models.users import User
 
 import logging
 
@@ -31,16 +33,16 @@ def add_school(db: Annotated[Session, Depends(get_db)], data: SchoolData):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @school_router.get('/', status_code=status.HTTP_200_OK, response_model=dict)
-def get_school(db: Annotated[Session, Depends(get_db)], school_name: str | None = None, school_id: int | None = None):
+def get_school(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], school_name: str | None = None, school_id: int | None = None):
     try:
-        school = SchoolCRUD.get_school(db=db, name=school_name, school_id=school_id)
+        school = SchoolCRUD.get_school(db=db, user=user ,name=school_name, school_id=school_id)
         return school
     except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"School is not found")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-@school_router.patch('/{school_id}', status_code=status.HTTP_200_OK, response_model=SchoolUpdateOut)
+@school_router.patch('/{school_id}', status_code=status.HTTP_200_OK, response_model=SchoolUpdateOut, dependencies=[Depends(check_role(UserTypes.admin))])
 def update_school_data(db: Annotated[Session, Depends(get_db)], school_id: Annotated[int, Path()], data: SchoolUpdate):
     try:
         updated_school = SchoolCRUD.update_school_data(db=db, school_id=school_id, data=data)
@@ -52,18 +54,18 @@ def update_school_data(db: Annotated[Session, Depends(get_db)], school_id: Annot
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-@school_router.delete('/{school_id}', status_code=status.HTTP_200_OK, response_model=bool)
-def delete_school(db: Annotated[Session, Depends(get_db)], school_id: Annotated[int, Path()]):
+@school_router.delete('/{school_id}', status_code=status.HTTP_200_OK, response_model=bool, dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
+def delete_school(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], school_id: Annotated[int, Path()]):
     try:
-        SchoolCRUD.delete_school(db=db, school_id=school_id)
+        SchoolCRUD.delete_school(db=db, user=user ,school_id=school_id)
         return {'detail': f'school with id {school_id} was deleted'}
     except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'School with id: {school_id} is not found')
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-@school_router.get("/", response_model=list[SchoolOut])
-def get_schools(db: Annotated[Session, Depends(get_db)],country: str | None = None,is_active: bool | None = None):
+@school_router.get("/", response_model=list[SchoolOut], dependencies=[Depends(check_role(UserTypes.admin))])
+def get_schools(db: Annotated[Session, Depends(get_db)], country: str | None = None, is_active: bool | None = None):
     try:
         schools = SchoolCRUD.get_schools(db=db, country=country, is_active=is_active)
         return schools

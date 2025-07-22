@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 
 from app.crud.users import UsersCRUD
 from app.db.core import get_db
-from app.schemas.users import UserOut
+from app.schemas.users import UserOut, UserTypes
 from app.exceptions.basic import NotFound
+from app.dependecies.auth import check_role
 
 
 import logging
@@ -13,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 users_router = APIRouter(
     prefix='/users',
-    tags=['users']
+    tags=['users'],
+    dependencies=[Depends(check_role(UserTypes.admin))]
 )
                 
 @users_router.get('/get-id', status_code=status.HTTP_202_ACCEPTED, response_model=UserOut)

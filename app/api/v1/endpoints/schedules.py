@@ -23,15 +23,15 @@ schedules_router = APIRouter(
 )
 
 @schedules_router.post('/', dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
-def add_schedule(db: Annotated[Session, Depends(get_db)], data: ScheduleData):
+def add_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] ,data: ScheduleData):
     try:
-        schedule = ScheduleCRUD.create_schedule(db=db, data=data)
+        schedule = ScheduleCRUD.create_schedule(db=db, user=user ,data=data)
         return schedule
     except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     except NotAllowed:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Principal cannot access other schools')
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @schedules_router.get('/', dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal, UserTypes.student, UserTypes.teacher]))])

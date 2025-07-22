@@ -51,9 +51,9 @@ def invite_student_to_school_by_id(db: Annotated[Session, Depends(get_db)], user
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @principal_router.post(path='/assign-student/group')
-def assign_student_to_group_by_id(db: Annotated[Session, Depends(get_db)], data: AssingStudentByIdGroupModel):
+def assign_student_to_group_by_id(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], data: AssingStudentByIdGroupModel):
     try:
-        PrincipalService.link_student_to_group_id(db=db, group_id=data.group_id, student_id=data.student_id)
+        PrincipalService.link_student_to_group_id(db=db, user=user ,group_id=data.group_id, student_id=data.student_id)
         return {
             f'Student with id {data.student_id}': f'Assigned to group id = {data.group_id}'
         }
@@ -67,8 +67,8 @@ def assign_student_to_group_by_id(db: Annotated[Session, Depends(get_db)], data:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @principal_router.post(path='/assign-teacher/subject')
-def assign_student_to_subject_by_id(db: Annotated[Session, Depends(get_db)], data: AssingTeacherByIdSubjectModel):
+def assign_student_to_subject_by_id(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], data: AssingTeacherByIdSubjectModel):
     try:
-        PrincipalService.link_teacher_to_subject_id(db=db, teacher_id=data.teacher_id, subject_id=data.subject_id)
+        PrincipalService.link_teacher_to_subject_id(db=db, user=user ,teacher_id=data.teacher_id, subject_id=data.subject_id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

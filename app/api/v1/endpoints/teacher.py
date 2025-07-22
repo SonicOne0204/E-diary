@@ -11,21 +11,24 @@ from app.exceptions.basic import NoDataError, NotAllowed, NotFound
 from app.schemas.teachers import MarkPresenceData
 from app.schemas.attendance import AttendanceOut
 from app.schemas.grades import AssignGradeData, GradeDataOut
+from app.schemas.users import UserTypes
 from app.db.models.users import User
 from app.services.auth import get_current_user
+from app.dependecies.auth import check_role
 
 import logging
 logger = logging.getLogger(__name__)
 
 teacher_router = APIRouter(
     prefix='/teacher',
-    tags=['teacher']
+    tags=['teacher'],
+    dependencies=[Depends(check_role([UserTypes.admin, UserTypes.teacher]))]
     )
 
 @teacher_router.post(path='/mark-attendance', response_model=AttendanceOut)
-def mark_attendance_id(db: Annotated[Session, Depends(get_db)], data: MarkPresenceData):
+def mark_attendance_id(db: Annotated[Session, Depends(get_db)], data: MarkPresenceData, user: Annotated[User, Depends(get_current_user)]):
     try:
-        attendance = TeacherService.mark_presence(db=db, student_id=data.student_id, lesson_id=data.lesson_id, teacher_id=data.teacher_id, status=data.status)
+        attendance = TeacherService.mark_presence(db=db, user=user ,student_id=data.student_id, lesson_id=data.lesson_id, teacher_id=data.teacher_id, status=data.status)
         return attendance
     except NotFound as e:
         if 'teacher' in str(e).lower():
@@ -38,9 +41,9 @@ def mark_attendance_id(db: Annotated[Session, Depends(get_db)], data: MarkPresen
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @teacher_router.post(path='/assign-grade', response_model=GradeDataOut)
-def assign_grade(db: Annotated[Session, Depends(get_db)], data: AssignGradeData):
+def assign_grade(db: Annotated[Session, Depends(get_db)], data: AssignGradeData, user: Annotated[User, Depends(get_current_user)]):
     try:
-        attendance = TeacherService.assign_grade(db=db, data=data)
+        attendance = TeacherService.assign_grade(db=db, user=user ,data=data)
         return attendance
     except NoDataError as e:
         logger.info(f'No full data passed: {e}')

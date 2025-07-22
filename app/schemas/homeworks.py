@@ -8,7 +8,6 @@ class HomeworkData(BaseModel):
     subject_id: int
     group_id: int
     school_id: int
-    teacher_id: int
 
 class HomeworkDataUpdate(BaseModel):
     name: str | None = None

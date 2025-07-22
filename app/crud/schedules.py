@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from fastapi import Depends
-
+from typing import Annotated
 from datetime import datetime, date, timezone
 
 
@@ -23,31 +23,35 @@ import logging
 logger = logging.getLogger(__name__)
 
 def create_attendance(db: Session, schedules: list[Schedule], school_id: int | None = None, group_id: int | None = None):
-    today = date.today()
-    attendances = []
-    if group_id:
-        students = db.query(Student).filter(Student.group_id == group_id)
-    if school_id:     
-        students = db.query(Student).filter(Student.school_id == school_id)
-    for schedule in schedules:
-        for student in students:
-            query = db.query(Attendance).filter(Attendance.schedule_id == schedule.id)
-            query = query.filter(Attendance.student_id == student.id)
-            query = query.filter(Attendance.created_at == today).first()
-            if query:
-                continue
-            attendance = Attendance(schedule_id = schedule.id, student_id = student.id, created_at = today)
-            db.add(attendance)
-            db.commit()
-            db.refresh(attendance)
-            attendances.append(attendance)
-    return attendances
+    try:
+        today = date.today()
+        attendances = []
+        if group_id:
+            students = db.query(Student).filter(Student.group_id == group_id)
+        if school_id:     
+            students = db.query(Student).filter(Student.school_id == school_id)
+        for schedule in schedules:
+            for student in students:
+                query = db.query(Attendance).filter(Attendance.schedule_id == schedule.id)
+                query = query.filter(Attendance.student_id == student.id)
+                query = query.filter(Attendance.created_at == today).first()
+                if query:
+                    continue
+                attendance = Attendance(schedule_id = schedule.id, student_id = student.id, created_at = today)
+                db.add(attendance)
+                db.commit()
+                db.refresh(attendance)
+                attendances.append(attendance)
+        return attendances
+    except Exception as e:
+        logger.exception(f'Unexpected error occured: {e}')
+        raise
 
 
 
 class ScheduleCRUD():
     @staticmethod
-    def create_schedule(db: Session, data: ScheduleData, user: User = Depends(get_current_user)):
+    def create_schedule(db: Session, data: ScheduleData, user: Annotated[User, Depends(get_current_user)]):
         try:
             subject: Subject = db.query(Subject).get(data.subject_id)
             teacher: Teacher = db.query(Teacher).get(data.teacher_id)

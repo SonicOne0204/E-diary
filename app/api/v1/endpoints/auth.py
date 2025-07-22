@@ -6,10 +6,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 import logging 
 
 from app.db.core import get_db
-from app.schemas.auth import Token, TeacherRegistrationData, StudentRegistrationData, PrincipalRegistrationData, LoginData, RegistrationDataOut
+from app.schemas.auth import Token, TeacherRegistrationData, StudentRegistrationData, PrincipalRegistrationData, LoginData, RegistrationDataOut, UserTypes
 from app.services.auth import login_user, register_student, register_principal, register_teacher
 from app.exceptions.auth import RoleNotAllowed, UserExists
-
+from app.dependecies.auth import check_role
 
 
 auth_router = APIRouter(
@@ -54,7 +54,7 @@ def registration(db: Annotated[Session, Depends(get_db)], user_data:StudentRegis
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR) 
 
-@auth_router.post('/register/principal', status_code=status.HTTP_201_CREATED, response_model=RegistrationDataOut)
+@auth_router.post('/register/principal', status_code=status.HTTP_201_CREATED, response_model=RegistrationDataOut, dependencies=[Depends(check_role(UserTypes.admin))])
 def registration(db: Annotated[Session, Depends(get_db)], user_data:PrincipalRegistrationData):
     try:
         return register_principal(db=db, user_data=user_data)

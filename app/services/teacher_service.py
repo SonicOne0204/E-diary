@@ -21,29 +21,32 @@ logger = logging.getLogger(__name__)
 
 class TeacherService():
     @staticmethod
-    def mark_presence(db: Session, student_id: int, lesson_id: int, status: StatusOptions, teacher_id: int | None = None ):
+    def mark_presence(db: Session, user: User ,student_id: int, lesson_id: int, status: StatusOptions):
         try:
-            lesson = db.query(Schedule).get(lesson_id)
-            student = db.query(Student).get(student_id)
-            teacher = db.query(Teacher).get(teacher_id)
+            lesson: Schedule = db.query(Schedule).get(lesson_id)
+            student: Student = db.query(Student).get(student_id)
+            teacher: Teacher = db.query(Teacher).get(user.id)
+            if teacher.school_id != student.school_id:
+                logger.warning(f'User with id {user.id} tried to access school with id {student.school_id}')
+                raise NotAllowed('Cannot access other schools')
+            if teacher.school_id != lesson.school_id:
+                logger.warning(f'User with id {user.id} tried to access school with id {lesson.school_id}')
+                raise NotAllowed('Cannot access other schools')
             if lesson == None:
+                logger.info(f'Schedule with id {lesson_id} is not found')
                 raise NotFound('Schedule not found')
             if student == None:
+                logger.info(f'Student with id {student_id} is not found')
                 raise NotFound('Student not found')
-            if teacher == None:
-                raise NotFound('Teacher not found')
             
             query = db.query(Attendance).filter(Attendance.schedule_id == lesson_id)
             attendance = query.filter(Attendance.student_id == student_id).one_or_none()
             if attendance:
                 attendance.status = status
                 attendance.updated_at = datetime.now(tz=timezone.utc)
-                attendance.marked_by = teacher_id
+                attendance.marked_by = user.id
             else:
-                if teacher_id != None:
-                    attendance = Attendance(status=True, student_id=student_id, marked_by=teacher_id, schedule_id=lesson_id, created_at=datetime.now())
-                else:
-                    attendance = Attendance(status=True, student_id=student_id, schedule_id=lesson_id, created_at=datetime.now())
+                attendance = Attendance(status=True, student_id=student_id, marked_by=teacher.id, schedule_id=lesson_id, created_at=datetime.now())
                 db.add(attendance)
             db.commit()
             return attendance
@@ -55,8 +58,17 @@ class TeacherService():
             logging.exception(f'Unexpected error occured: {e}')
             raise
     @staticmethod
-    def assign_grade(db: Session, data: AssignGradeData):
+    def assign_grade(db: Session, user: User ,data: AssignGradeData):
         try:
+            student: Student = db.query(Student).get(data.student_id)
+            teacher: Teacher = db.query(Teacher).get(user.id)
+            lesson: Schedule = db.query(Schedule).get(data.schedule_id)
+            if teacher.school_id != student.school_id:
+                logger.warning(f'User with id {user.id} tried to access school with id {student.school_id}')
+                raise NotAllowed('Cannot access other schools')
+            if teacher.school_id != lesson.school_id:
+                logger.warning(f'User with id {user.id} tried to access school with id {lesson.school_id}')
+                raise NotAllowed('Cannot access other schools')
             grade = Grade()
             if data.grade_system == GradeSystems.five_num_sys and data.value_numeric != None:
                 data_dict = data.model_dump(exclude_unset=True, exclude={'value_boolean', 'value_str', 'value_numeric'})
@@ -74,10 +86,7 @@ class TeacherService():
             else:
                 raise NoDataError(
                 'Data is not full:\n'
-                f'Grade system:{data.grade_system} \n'
-                f'value_str: {data.value_letter}\n'
-                f'value_num: {data.value_numeric}\n'
-                f'value_bool: {data.value_boolean}'
+                f'Grade system:{data.grade_system} \nvalue_str: {data.value_letter}\nvalue_num: {data.value_numeric}\nvalue_bool: {data.value_boolean}'
                 )
             for key,value in data_dict.items():
                 setattr(grade, key, value)
