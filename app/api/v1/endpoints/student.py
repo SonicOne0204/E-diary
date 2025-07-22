@@ -22,7 +22,7 @@ student_router = APIRouter(
     )
 
 @student_router.post("/{invitation_id}/accept", status_code=200)
-def accept_invitation_endpoint(invitation_id: int,db: Annotated[Session, Depends(get_db)],user: Annotated[User, Depends(get_current_user)]
+def accept_invitation_endpoint(invitation_id: int,db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)]
 ):
     try:
         return StudentService.accept_invitation(db=db, user=user, invitation_id=invitation_id)

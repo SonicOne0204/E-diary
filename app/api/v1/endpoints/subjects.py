@@ -11,6 +11,7 @@ from app.db.models.users import User
 from app.services.auth import get_current_user
 from app.dependecies.auth import check_role
 from app.schemas.auth import UserTypes
+from app.db.models.subjects import Subject
 
 import logging
 
@@ -67,9 +68,9 @@ def delete_subject(db: Annotated[Session, Depends(get_db)], user: Annotated[User
 @subject_router.get('/', status_code=status.HTTP_200_OK, response_model=SubjectDataOut, dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal, UserTypes.student, UserTypes.teacher]))])
 def get_subjects(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] ,school_id: int , name: str):
     try:
-        subject = SubjectCRUD.get_subjects(db=db, school_id=school_id, user=user ,name=name)
+        subject: Subject = SubjectCRUD.get_subjects(db=db, school_id=school_id, user=user ,name=name)
         return subject
     except NotFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"subject with name '{subject_name} is not found'")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"subject with name '{subject.name} is not found'")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
