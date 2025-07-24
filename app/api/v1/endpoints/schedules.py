@@ -22,8 +22,8 @@ schedules_router = APIRouter(
     tags=['schedules']
 )
 
-@schedules_router.post('/', dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
-def add_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] ,data: ScheduleData):
+@schedules_router.post('/', status_code=status.HTTP_201_CREATED ,dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
+def add_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] ,data: ScheduleData) -> Schedule:
     try:
         schedule = ScheduleCRUD.create_schedule(db=db, user=user ,data=data)
         return schedule
@@ -35,7 +35,11 @@ def add_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, 
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @schedules_router.get('/', dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal, UserTypes.student, UserTypes.teacher]))])
-def get_schedules_today(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] ,school_id: int | None = None, group_id: int | None = None, teacher_id: int | None = None):
+def get_schedules_today(
+    db: Annotated[Session, Depends(get_db)], 
+    user: Annotated[User, Depends(get_current_user)] ,
+    school_id: int | None = None, group_id: int | None = None, 
+    teacher_id: int | None = None) -> list[Schedule]:
     try:
         schedules = ScheduleCRUD.get_schedule_today(db=db, user=user ,school_id=school_id, group_id=group_id, teacher_id=teacher_id)
         return schedules
@@ -47,7 +51,7 @@ def get_schedules_today(db: Annotated[Session, Depends(get_db)], user: Annotated
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @schedules_router.get('/{schedule_id}', dependencies=[Depends(check_role(UserTypes.admin))])
-def get_schedule(db: Annotated[Session, Depends(get_db)], schedule_id: int):
+def get_schedule(db: Annotated[Session, Depends(get_db)], schedule_id: int) -> Schedule:
     try:
         schedule = ScheduleCRUD.get_schedule_id(db=db, schedule_id=schedule_id)
         return schedule
@@ -57,10 +61,10 @@ def get_schedule(db: Annotated[Session, Depends(get_db)], schedule_id: int):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @schedules_router.delete('/{schedule_id}', status_code=status.HTTP_204_NO_CONTENT , dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
-def delete_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], schedule_id: int):
+def delete_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], schedule_id: int) -> None:
     try:
         ScheduleCRUD.delete_schedule(db=db, user=user , schedule_id=schedule_id)
-        return {"detail": f"schedule with id {schedule_id} was deleted"}
+        logger.debug('Schedule with id {schedule_id} was deleted')
     except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='schedule not found')
     except IntegrityError:
@@ -71,7 +75,7 @@ def delete_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[Use
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 @schedules_router.patch('/{schedule_id}', dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
-def update_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] , schedule_id: int, data: ScheduleUpdateData):
+def update_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] , schedule_id: int, data: ScheduleUpdateData) -> Schedule:
     try:
         updated_schedule = ScheduleCRUD.update_schedule(db=db, user=user ,schedule_id=schedule_id, data=data)
         return updated_schedule

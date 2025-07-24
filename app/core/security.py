@@ -5,6 +5,7 @@ from typing import Annotated
 from datetime import datetime, timedelta, timezone
 from jose import jwt 
 from app.core.settings import settings
+from app.exceptions.auth import WrongPassword
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -17,7 +18,7 @@ def verify_password(plain, hashed) -> bool:
     if verifying:
         return verifying
     else:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Wrong password')
+        raise WrongPassword('Wrong password')
     
 def create_access_token(data: dict, expiration: timedelta | None = None) -> str: 
     data_copy = data.copy()

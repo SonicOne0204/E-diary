@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship, mapped_column, Mapped
 from app.db.core import model
 from app.db.models.users import User
 from app.db.models.schools import School
-from app.db.models.roles import Role
 from app.db.models.groups import Group
 from app.db.models.associations import subject_teacher
 # Teacher, Student inherit from User model, because it is filled through polymorphysm 
@@ -12,11 +11,9 @@ from app.db.models.associations import subject_teacher
 class Teacher(User):
     __tablename__ = 'teachers'
     id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
-    role_id: Mapped[int] = mapped_column(Integer, ForeignKey('roles.id', ondelete='CASCADE'), nullable=True)
     school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id', ondelete='CASCADE'), nullable=True)
 
     school: Mapped['School'] = relationship('School', back_populates='teachers', passive_deletes=True) 
-    role: Mapped['Role'] = relationship('Role', back_populates='teachers', passive_deletes=True)
     subjects: Mapped[list['Subject']] = relationship('Subject', back_populates='teachers', secondary=subject_teacher)
     homeworks: Mapped[list['Homework']] = relationship('Homework', back_populates='teacher')
     schedules: Mapped[list['Schedule']] = relationship('Schedule', back_populates='teacher')

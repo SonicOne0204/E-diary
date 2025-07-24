@@ -18,6 +18,7 @@ def check_role(required_roles: list[UserTypes] | UserTypes):
                 return user
         else:
             if user.type == required_roles:
+                print(required_roles)
                 return user
         raise RoleNotAllowed(user.type)
     return role_checker

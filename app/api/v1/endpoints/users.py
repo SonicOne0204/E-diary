@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.crud.users import UsersCRUD
 from app.db.core import get_db
+from app.db.models.users import User
 from app.schemas.users import UserOut, UserTypes
 from app.exceptions.basic import NotFound
 from app.dependecies.auth import check_role
@@ -18,8 +19,8 @@ users_router = APIRouter(
     dependencies=[Depends(check_role(UserTypes.admin))]
 )
                 
-@users_router.get('/get-id', status_code=status.HTTP_202_ACCEPTED, response_model=UserOut)
-def get_id(db: Annotated[Session, Depends(get_db)], username: str):
+@users_router.get('/by-username', response_model=UserOut)
+def get_id(db: Annotated[Session, Depends(get_db)], username: str) -> User:
     try:
         return UsersCRUD.get_user_id(db=db, username=username)
     except NotFound:
@@ -28,10 +29,10 @@ def get_id(db: Annotated[Session, Depends(get_db)], username: str):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Internal server error occured')
         
 @users_router.delete('/delete/{user_id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete(db: Annotated[Session, Depends(get_db)], user_id: Annotated[int, Path()]):
+def delete(db: Annotated[Session, Depends(get_db)], user_id: Annotated[int, Path()]) -> None:
     try:
         UsersCRUD.delete_user(db=db, user_id=user_id)
-        return {f'User with id {user_id}': 'deleted'}
+        logger.debug(f'User with id {user_id} was deleted')
     except NotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No such user')
     except Exception:

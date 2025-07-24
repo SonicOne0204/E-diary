@@ -3,3 +3,4 @@
 /app/logging/E_diary.log
 __pycache__/
 *.py[cod]
+.vscode/

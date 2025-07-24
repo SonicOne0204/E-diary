@@ -21,9 +21,8 @@ student_router = APIRouter(
     tags=['student']
     )
 
-@student_router.post("/{invitation_id}/accept", status_code=200)
-def accept_invitation_endpoint(invitation_id: int,db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)]
-):
+@student_router.post("/{invitation_id}/accept")
+def accept_invitation_endpoint(invitation_id: int,db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)]) -> dict:
     try:
         return StudentService.accept_invitation(db=db, user=user, invitation_id=invitation_id)
     except NotFound as e:
