@@ -1,3 +1,4 @@
+from pydantic import EmailStr
 from sqlalchemy import String, Integer, Sequence, ForeignKey
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from app.db.core import model 
