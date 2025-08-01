@@ -2,7 +2,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, ForeignKey, Boolean, DateTime
 from datetime import datetime
 
-from app.db.core import model
+from app.db.core import Base
 from app.db.models.types import Teacher
 from app.db.models.schools import School
 from app.db.models.groups import Group
@@ -10,7 +10,7 @@ from app.db.models.subjects import Subject
 
 
 
-class Homework(model):
+class Homework(Base):
     __tablename__ = 'homeworks'
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

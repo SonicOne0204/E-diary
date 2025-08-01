@@ -12,16 +12,15 @@ class RegistrationData(BaseModel):
     email: str
     first_name: str
     last_name: str
-    type: UserTypes
 
 class TeacherRegistrationData(RegistrationData):
-    type: Literal[UserTypes.teacher]
+    type: Literal[UserTypes.teacher] = UserTypes.teacher
 
 class StudentRegistrationData(RegistrationData):
-    type: Literal[UserTypes.student]
+    type: Literal[UserTypes.student] = UserTypes.student
 
 class PrincipalRegistrationData(RegistrationData):
-    type: Literal[UserTypes.principal]
+    type: Literal[UserTypes.principal] = UserTypes.principal
     school_id: int | None = None
 
 class RegistrationDataOut(BaseModel):
@@ -31,6 +30,12 @@ class RegistrationDataOut(BaseModel):
     first_name: str
     last_name: str
     type: UserTypes
+
+    class Config:
+        from_attributes = True
+
+class PrincipalRegistrationDataOut(RegistrationDataOut):
+    school_id: int | None = None
 
 class LoginData(BaseModel):
     username: str

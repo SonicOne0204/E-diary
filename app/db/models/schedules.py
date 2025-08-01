@@ -2,14 +2,14 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, ForeignKey, Boolean, DateTime, Time
 from datetime import datetime, time, timezone
 
-from app.db.core import model
+from app.db.core import Base
 from app.db.models.types import Teacher
 from app.db.models.schools import School
 from app.db.models.groups import Group
 from app.db.models.subjects import Subject
 
 
-class Schedule(model):
+class Schedule(Base):
     __tablename__ = 'schedules'
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

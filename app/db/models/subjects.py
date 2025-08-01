@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, ForeignKey
 
-from app.db.core import model
+from app.db.core import Base
 from app.db.models.schools import School
 from app.db.models.associations import subject_teacher
 
-class Subject(model):
+class Subject(Base):
     __tablename__ = 'subjects'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

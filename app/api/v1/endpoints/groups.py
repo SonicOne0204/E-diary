@@ -32,7 +32,7 @@ def add_group(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Dep
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-@groups_router.get('/schools/{school_id}')
+@groups_router.get('/schools/{school_id}', response_model=GroupDataOut)
 def get_groups(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] , school_id: int) -> list[Group]:
     try:
         groups: list[Group] = GroupCRUD.get_groups(db=db, user=user ,school_id=school_id)
@@ -42,7 +42,7 @@ def get_groups(db: Annotated[Session, Depends(get_db)], user: Annotated[User, De
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@groups_router.get('/{group_id}', response_model=GroupData)
+@groups_router.get('/{group_id}', response_model=GroupDataOut)
 def get_group(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] , group_id: int) -> Group:
     try:
         group = GroupCRUD.get_group(db=db, user=user ,group_id=group_id)
@@ -64,7 +64,7 @@ def delete_group(db: Annotated[Session, Depends(get_db)], user: Annotated[User, 
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-@groups_router.patch('/{group_id}')
+@groups_router.patch('/{group_id}', response_model=GroupDataOut)
 def update_group(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] , group_id: int, data: GroupData) -> Group:
     try:
         updated_group = GroupCRUD.update_group(db=db, user=user ,group_id=group_id, data=data)

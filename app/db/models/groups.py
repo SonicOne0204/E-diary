@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, ForeignKey
 
-from app.db.core import model
+from app.db.core import Base
 from app.db.models.schools import School
 
-class Group(model):
+class Group(Base):
     __tablename__ = 'groups'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     grade: Mapped[int] = mapped_column(Integer) 

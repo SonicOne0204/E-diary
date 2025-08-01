@@ -5,7 +5,7 @@ from typing import Annotated
 
 from app.crud.homeworks import HomeworkCRUD
 from app.db.core import get_db
-from app.schemas.homeworks import HomeworkData, HomeworkDataUpdate
+from app.schemas.homeworks import HomeworkData, HomeworkDataUpdate, HomeworkDataOut
 from app.db.models.homeworks import Homework
 from app.db.models.users import User
 from app.exceptions.basic import NotFound, NotAllowed
@@ -20,7 +20,7 @@ homeworks_router = APIRouter(
     tags=['homeworks']
 )
 
-@homeworks_router.post('/', status_code=status.HTTP_201_CREATED ,response_model=HomeworkData, dependencies=[Depends(check_role([UserTypes.admin , UserTypes.teacher]))])
+@homeworks_router.post('/', status_code=status.HTTP_201_CREATED ,response_model=HomeworkDataOut, dependencies=[Depends(check_role([UserTypes.admin , UserTypes.teacher]))])
 def add_homework(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] , data: HomeworkData) -> Homework:
     try:
         homework: Homework = HomeworkCRUD.add_homework(db=db, user=user ,data=data)
@@ -32,7 +32,7 @@ def add_homework(db: Annotated[Session, Depends(get_db)], user: Annotated[User, 
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-@homeworks_router.get('/', dependencies=[Depends(check_role([UserTypes.admin, UserTypes.teacher, UserTypes.principal, UserTypes.student]))])
+@homeworks_router.get('/', response_model=list[HomeworkDataOut],dependencies=[Depends(check_role([UserTypes.admin, UserTypes.teacher, UserTypes.principal, UserTypes.student]))])
 def get_homeworks(
     db: Annotated[Session, Depends(get_db)], 
     user: Annotated[User, Depends(get_current_user)] ,
@@ -46,7 +46,7 @@ def get_homeworks(
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@homeworks_router.get('/{homework_id}')
+@homeworks_router.get('/{homework_id}', response_model=HomeworkDataOut)
 def get_homework(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], homework_id: int) -> Homework:
     try:
         homework = HomeworkCRUD.get_homework_id(db=db,user=user ,homework_id=homework_id)
@@ -66,7 +66,7 @@ def delete_homework(db: Annotated[Session, Depends(get_db)], user: Annotated[Use
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-@homeworks_router.patch('/{homework_id}')
+@homeworks_router.patch('/{homework_id}', response_model=HomeworkDataOut)
 def update_homework(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], homework_id: int, data: HomeworkDataUpdate) -> Homework:
     try:
         updated_homework = HomeworkCRUD.update_homework(db=db, user=user ,homework_id=homework_id, data=data)

@@ -6,6 +6,7 @@ from app.crud.invitations import get_invitations
 from app.db.core import get_db
 from app.db.models.users import User
 from app.db.models.invitations import Invitation
+from app.schemas.invitations import InvitationOut
 from app.dependecies.auth import check_role, get_current_user
 
 import logging
@@ -17,7 +18,7 @@ invitations_router = APIRouter(
 )
 
     
-@invitations_router.get('/')
+@invitations_router.get('/', response_model=InvitationOut)
 def get_invitations_by_user(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)]) -> list[Invitation]:
     try:
         invitations: list[Invitation] = get_invitations(db=db, user=user)

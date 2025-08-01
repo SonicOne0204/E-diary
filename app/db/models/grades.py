@@ -2,13 +2,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, ForeignKey, Boolean, DateTime, Float, UniqueConstraint
 from datetime import datetime, date, timezone
 
-from app.db.core import model
+from app.db.core import Base
 from app.db.models.types import Student, Teacher
 from app.db.models.schedules import Schedule
 
 
 
-class Grade(model):
+class Grade(Base):
     __tablename__ = 'grades'
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

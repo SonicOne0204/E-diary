@@ -12,6 +12,7 @@ from app.exceptions.teachers import TeacherAlreadyAssigned
 from app.exceptions.students import StudentAlreadyAssigned
 from app.exceptions.basic import NotFound
 from app.schemas.users import UserTypes
+from app.schemas.invitations import InvitationOut
 from app.dependecies.auth import check_role, get_current_user
 
 
@@ -24,7 +25,7 @@ principal_router = APIRouter(
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))]
     )
 
-@principal_router.post(path='/assign-teacher')
+@principal_router.post(path='/assign-teacher', response_model=InvitationOut)
 def invite_teacher_to_school_id(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] ,data: InviteTeacherByIdSchoolModel) -> Invitation:
     try:
         invitation = PrincipalService.invite_teacher_to_school_id(db=db, school_id=data.school_id, user=user ,teacher_id=data.teacher_id)
@@ -38,7 +39,7 @@ def invite_teacher_to_school_id(db: Annotated[Session, Depends(get_db)], user: A
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@principal_router.post(path='/assign-student/school')
+@principal_router.post(path='/assign-student/school', response_model=InvitationOut)
 def invite_student_to_school_by_id(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] ,data: InviteStudentByIdSchoolModel) -> Invitation:
     try:
         invitation = PrincipalService.invite_student_to_school_id(db=db, user=user ,school_id= data.school_id, student_id=data.student_id)
