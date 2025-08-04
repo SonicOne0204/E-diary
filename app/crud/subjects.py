@@ -50,7 +50,7 @@ class SubjectCRUD():
             db.delete(subject)
             db.commit()
             logger.info(f'subject with id {subject_id} was deleted')
-            return subject
+            return True
         except SQLAlchemyError as e:
             logger.error(f'Error in db: {e}')
             raise

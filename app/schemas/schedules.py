@@ -27,3 +27,13 @@ class ScheduleUpdateData(BaseModel):
     group_id: int | None = None
     subject_id: int | None = None
     teacher_id: int | None = None
+
+class ScheduleDataOut(BaseModel):
+    id: int
+    day_of_week: Week
+    start_time: time
+    end_time: time
+    group_id: int
+    school_id: int
+    subject_id: int
+    teacher_id: int | None

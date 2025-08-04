@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 class UserTypes(str, Enum):
     admin = 'admin'
@@ -10,7 +10,7 @@ class UserTypes(str, Enum):
 class UserOut(BaseModel):
     id: int
     username: str
-    email: str
+    email: EmailStr
     first_name: str
     last_name: str
     type: str

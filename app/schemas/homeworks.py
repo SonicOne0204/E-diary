@@ -9,6 +9,15 @@ class HomeworkData(BaseModel):
     group_id: int
     school_id: int
 
+class HomeworkDataOut(BaseModel):
+    id: int
+    name: str 
+    description: str | None = None
+    due_date: datetime 
+    subject_id: int
+    group_id: int
+    school_id: int
+
 class HomeworkDataUpdate(BaseModel):
     name: str | None = None
     description: str | None = None

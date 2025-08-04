@@ -48,6 +48,8 @@ def assign_grade(db: Annotated[Session, Depends(get_db)], data: AssignGradeData,
     except NoDataError as e:
         logger.info(f'No full data passed: {e}')
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Value or grade system is blank')
+    except NotAllowed as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except IntegrityError as e:
         if 'unique constraint' in str(e.orig):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='This grade is already assigned')

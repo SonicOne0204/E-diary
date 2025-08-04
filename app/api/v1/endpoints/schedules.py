@@ -5,7 +5,7 @@ from typing import Annotated
 
 from app.crud.schedules import ScheduleCRUD
 from app.db.core import get_db
-from app.schemas.schedules import ScheduleData, ScheduleUpdateData
+from app.schemas.schedules import ScheduleData, ScheduleUpdateData, ScheduleDataOut
 from app.db.models.schedules import Schedule
 from app.db.models.users import User
 from app.exceptions.basic import NotAllowed, NotFound
@@ -22,7 +22,7 @@ schedules_router = APIRouter(
     tags=['schedules']
 )
 
-@schedules_router.post('/', status_code=status.HTTP_201_CREATED ,dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
+@schedules_router.post('/', response_model=ScheduleDataOut ,status_code=status.HTTP_201_CREATED ,dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
 def add_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] ,data: ScheduleData) -> Schedule:
     try:
         schedule = ScheduleCRUD.create_schedule(db=db, user=user ,data=data)
@@ -34,7 +34,7 @@ def add_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, 
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-@schedules_router.get('/', dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal, UserTypes.student, UserTypes.teacher]))])
+@schedules_router.get('/', response_model=list[ScheduleDataOut] , dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal, UserTypes.student, UserTypes.teacher]))])
 def get_schedules_today(
     db: Annotated[Session, Depends(get_db)], 
     user: Annotated[User, Depends(get_current_user)] ,
@@ -50,7 +50,7 @@ def get_schedules_today(
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@schedules_router.get('/{schedule_id}', dependencies=[Depends(check_role(UserTypes.admin))])
+@schedules_router.get('/{schedule_id}', response_model=ScheduleDataOut , dependencies=[Depends(check_role(UserTypes.admin))])
 def get_schedule(db: Annotated[Session, Depends(get_db)], schedule_id: int) -> Schedule:
     try:
         schedule = ScheduleCRUD.get_schedule_id(db=db, schedule_id=schedule_id)
@@ -74,7 +74,7 @@ def delete_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[Use
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-@schedules_router.patch('/{schedule_id}', dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
+@schedules_router.patch('/{schedule_id}', response_model=ScheduleDataOut , dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
 def update_schedule(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)] , schedule_id: int, data: ScheduleUpdateData) -> Schedule:
     try:
         updated_schedule = ScheduleCRUD.update_schedule(db=db, user=user ,schedule_id=schedule_id, data=data)

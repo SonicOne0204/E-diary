@@ -1,7 +1,7 @@
 from sqlalchemy import String, Integer, Sequence, ForeignKey
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
-from app.db.core import model
+from app.db.core import Base
 from app.db.models.users import User
 from app.db.models.schools import School
 from app.db.models.groups import Group

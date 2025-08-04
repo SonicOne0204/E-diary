@@ -63,7 +63,7 @@ def update_subject_data(db: Annotated[Session, Depends(get_db)], user: Annotated
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @subject_router.delete('/{subject_id}', dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))])
-def delete_subject(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], subject_id: Annotated[int, Path()]) -> Subject:
+def delete_subject(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_current_user)], subject_id: Annotated[int, Path()]) -> None:
     try:
         SubjectCRUD.delete_subject(db=db, user=user,subject_id=subject_id)
         logger.debug(f'Subject with id {subject_id} was deleted')

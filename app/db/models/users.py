@@ -1,9 +1,10 @@
-from sqlalchemy import String, Integer, Sequence, ForeignKey
+
+from sqlalchemy import String
 from sqlalchemy.orm import relationship, mapped_column, Mapped
-from app.db.core import model 
+from app.db.core import Base
 from app.db.models.invitations import Invitation
 
-class User(model):
+class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)

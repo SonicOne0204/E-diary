@@ -15,7 +15,6 @@ class AssignGradeData(BaseModel):
     value_boolean: bool |  None = None
     schedule_id: int
     student_id: int
-    marked_by: int 
 
 class GradeDataOut(BaseModel):
     id: int
@@ -27,7 +26,7 @@ class GradeDataOut(BaseModel):
     value_boolean: bool |  None = None
     schedule_id: int
     student_id: int
-    marked_by: int 
+    marked_by: int | None = None
 
     class Config:
         from_attributes = True
