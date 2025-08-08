@@ -109,7 +109,7 @@ class TeacherService():
     def accept_invitation(db: Session, user: User , invitation_id: int):
         try:
             invitation: Invitation = db.query(Invitation).get(invitation_id)
-            if invitation_id == None:
+            if invitation == None:
                 logger.info(f'Invitation with id {invitation_id} not found')
                 raise NotFound('Invitation not found')
             if invitation.invited_user_id != user.id:

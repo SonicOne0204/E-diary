@@ -6,6 +6,10 @@ class Settings(BaseSettings):
     DB_URL: str
     TEST_DB_URL: str
     ALGORITHM: str
+    
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
 
     model_config = ConfigDict(env_file='.env')
 

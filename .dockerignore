@@ -1,0 +1,13 @@
+**.git
+.gitignore
+**__pycache__/
+*.pyc
+.env
+logging/
+Dockerfile
+*.yml
+tests/
+.pytest_cache
+pytest.ini
+diary_env
+
