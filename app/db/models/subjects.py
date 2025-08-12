@@ -5,14 +5,25 @@ from app.db.core import Base
 from app.db.models.schools import School
 from app.db.models.associations import subject_teacher
 
+
 class Subject(Base):
-    __tablename__ = 'subjects'
+    __tablename__ = "subjects"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String)
-    school_id: Mapped[int] = mapped_column(Integer, ForeignKey('schools.id', ondelete='CASCADE'))
+    school_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("schools.id", ondelete="CASCADE")
+    )
 
-    homeworks: Mapped[list['Homework']] = relationship('Homework', back_populates='subjects', passive_deletes=True)
-    teachers: Mapped[list['Teacher']] = relationship('Teacher', back_populates='subjects', secondary=subject_teacher)
-    school: Mapped['School'] = relationship('School', back_populates='subjects', passive_deletes=True)
-    schedules: Mapped[list['Schedule']] = relationship('Schedule', back_populates='subject')
+    homeworks: Mapped[list["Homework"]] = relationship(
+        "Homework", back_populates="subjects", passive_deletes=True
+    )
+    teachers: Mapped[list["Teacher"]] = relationship(
+        "Teacher", back_populates="subjects", secondary=subject_teacher
+    )
+    school: Mapped["School"] = relationship(
+        "School", back_populates="subjects", passive_deletes=True
+    )
+    schedules: Mapped[list["Schedule"]] = relationship(
+        "Schedule", back_populates="subject"
+    )

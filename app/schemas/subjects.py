@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class SubjectData(BaseModel):
     name: str
     school_id: int
@@ -8,6 +9,7 @@ class SubjectData(BaseModel):
 class SubjectUpdate(BaseModel):
     name: str | None = None
     school_id: int | None = None
+
 
 class SubjectDataOut(BaseModel):
     id: int

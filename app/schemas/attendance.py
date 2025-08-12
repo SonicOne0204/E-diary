@@ -1,11 +1,12 @@
 from pydantic import BaseModel
 from enum import Enum
 
-class StatusOptions(str , Enum):
-    absent = 'absent'
-    present = 'present'
-    excused = 'excused'
-    late = 'late' 
+
+class StatusOptions(str, Enum):
+    absent = "absent"
+    present = "present"
+    excused = "excused"
+    late = "late"
 
 
 class AttendanceOut(BaseModel):

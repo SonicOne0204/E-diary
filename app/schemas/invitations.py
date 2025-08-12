@@ -2,10 +2,12 @@ from enum import Enum
 from pydantic import BaseModel
 from datetime import datetime
 
+
 class Invitation_status(str, Enum):
-    pending = 'pending'
-    accepted = 'accepted'
-    rejected = 'rejected'
+    pending = "pending"
+    accepted = "accepted"
+    rejected = "rejected"
+
 
 class InvitationOut(BaseModel):
     id: int
@@ -14,6 +16,3 @@ class InvitationOut(BaseModel):
     school_id: int
     status: Invitation_status
     created_at: datetime
-
-
-

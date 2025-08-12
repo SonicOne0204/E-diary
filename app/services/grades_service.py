@@ -6,7 +6,9 @@ from app.schemas.users import UserTypes
 from app.exceptions.auth import RoleNotAllowed
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 def sort_grades(student_grades: list[Grade]):
     grades_percent = []
@@ -40,19 +42,24 @@ def sort_grades(student_grades: list[Grade]):
 
     return sorted_grades
 
-class GradeService():
+
+class GradeService:
     def __init__(self, db: Session, student: User):
         if student.type != UserTypes.student:
-            raise RoleNotAllowed([UserTypes.admin, UserTypes.principal, UserTypes.teacher])
+            raise RoleNotAllowed(
+                [UserTypes.admin, UserTypes.principal, UserTypes.teacher]
+            )
         grades_raw = db.query(Grade).filter(Grade.student_id == student.id).all()
-        self.grades = sort_grades(grades_raw) 
+        self.grades = sort_grades(grades_raw)
         self.user = student
 
     def avarege(self):
-        unawaiable_grades = ['grades_passing', 'grades_letter']
+        unawaiable_grades = ["grades_passing", "grades_letter"]
         for grade in self.grades:
             if grade in unawaiable_grades:
-                logger.debug(f'Skipped "{grade}" of student {self.user}. Cannot average booleans or strings')
+                logger.debug(
+                    f'Skipped "{grade}" of student {self.user}. Cannot average booleans or strings'
+                )
                 continue
             average = grade / len(self.grades)
             sum = {}

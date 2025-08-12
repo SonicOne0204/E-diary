@@ -1,10 +1,12 @@
 import logging
- 
-
-formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-file_handling = logging.FileHandler('app/logging/E_diary.log')
+formatter = logging.Formatter(
+    fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+
+file_handling = logging.FileHandler("app/logging/E_diary.log")
 file_handling.setFormatter(formatter)
 
 stream_handling = logging.StreamHandler()

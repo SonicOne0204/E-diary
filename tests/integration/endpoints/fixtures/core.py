@@ -8,10 +8,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture
 def test_client():
     with TestClient(app) as client:
         yield client
+
 
 @pytest.fixture
 def test_get_db():
@@ -20,4 +22,3 @@ def test_get_db():
         yield db
     finally:
         db.close()
-

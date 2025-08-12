@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, ForeignKey, Boolean, DateTime
+from sqlalchemy import ForeignKey
 from datetime import datetime, timezone
 
 from app.db.core import Base
 from app.db.models.schools import School
+
 
 class Invitation(Base):
     __tablename__ = "invitations"
@@ -18,13 +19,9 @@ class Invitation(Base):
     school: Mapped["School"] = relationship("School", back_populates="invitations")
 
     inviter: Mapped["User"] = relationship(
-        "User",
-        foreign_keys=[invited_by_id],
-        back_populates="invitations_sent"
+        "User", foreign_keys=[invited_by_id], back_populates="invitations_sent"
     )
 
     invitee: Mapped["User"] = relationship(
-        "User",
-        foreign_keys=[invited_user_id],
-        back_populates="invitations_received"
+        "User", foreign_keys=[invited_user_id], back_populates="invitations_received"
     )

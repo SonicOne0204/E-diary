@@ -1,15 +1,17 @@
 from pydantic import BaseModel
 from enum import Enum
-from datetime import time, datetime
+from datetime import time
+
 
 class Week(str, Enum):
-    monday = 'monday'
-    tuesday = 'tuesday'
-    wednesday = 'wednesday'
-    thursday = 'thursday'
-    friday = 'friday'
-    saturday = 'saturday'
-    sunday = 'sunday'
+    monday = "monday"
+    tuesday = "tuesday"
+    wednesday = "wednesday"
+    thursday = "thursday"
+    friday = "friday"
+    saturday = "saturday"
+    sunday = "sunday"
+
 
 class ScheduleData(BaseModel):
     day_of_week: Week
@@ -20,6 +22,7 @@ class ScheduleData(BaseModel):
     subject_id: int
     teacher_id: int | None = None
 
+
 class ScheduleUpdateData(BaseModel):
     day_of_week: Week | None = None
     start_time: time | None = None
@@ -27,6 +30,7 @@ class ScheduleUpdateData(BaseModel):
     group_id: int | None = None
     subject_id: int | None = None
     teacher_id: int | None = None
+
 
 class ScheduleDataOut(BaseModel):
     id: int

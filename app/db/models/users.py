@@ -1,8 +1,8 @@
-
 from sqlalchemy import String
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from app.db.core import Base
 from app.db.models.invitations import Invitation
+
 
 class User(Base):
     __tablename__ = "users"
@@ -16,21 +16,13 @@ class User(Base):
     type: Mapped[str] = mapped_column(String)
 
     invitations_sent: Mapped[list["Invitation"]] = relationship(
-        "Invitation",
-        back_populates="inviter",
-        foreign_keys=[Invitation.invited_by_id]
+        "Invitation", back_populates="inviter", foreign_keys=[Invitation.invited_by_id]
     )
 
     invitations_received: Mapped[list["Invitation"]] = relationship(
         "Invitation",
         back_populates="invitee",
-        foreign_keys=[Invitation.invited_user_id]
+        foreign_keys=[Invitation.invited_user_id],
     )
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'admin',
-        'polymorphic_on': type
-    }
-
-
-
+    __mapper_args__ = {"polymorphic_identity": "admin", "polymorphic_on": type}

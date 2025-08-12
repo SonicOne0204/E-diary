@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi import FastAPI, status, Request
+from fastapi import status, Request
 from fastapi.responses import JSONResponse
 
 
@@ -34,9 +34,10 @@ app.include_router(attendances_router)
 app.include_router(student_router)
 app.include_router(invitations_router)
 
+
 @app.exception_handler(RoleNotAllowed)
 def role_exception_handler(request: Request, exc: RoleNotAllowed):
-    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={'detail': f"roles '{exc.roles}' are not allowed"})
-
-
-
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"detail": f"roles '{exc.roles}' are not allowed"},
+    )

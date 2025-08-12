@@ -11,30 +11,42 @@ from app.dependecies.auth import check_role
 
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 users_router = APIRouter(
-    prefix='/users',
-    tags=['users'],
-    dependencies=[Depends(check_role(UserTypes.admin))]
+    prefix="/users", tags=["users"], dependencies=[Depends(check_role(UserTypes.admin))]
 )
-                
-@users_router.get('/by-username', response_model=UserOut)
+
+
+@users_router.get("/by-username", response_model=UserOut)
 def get_id(db: Annotated[Session, Depends(get_db)], username: str) -> User:
     try:
         return UsersCRUD.get_user_id(db=db, username=username)
     except NotFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No such user')
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No such user"
+        )
     except Exception:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Internal server error occured')
-        
-@users_router.delete('/delete/{user_id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete(db: Annotated[Session, Depends(get_db)], user_id: Annotated[int, Path()]) -> None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error occured",
+        )
+
+
+@users_router.delete("/delete/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete(
+    db: Annotated[Session, Depends(get_db)], user_id: Annotated[int, Path()]
+) -> None:
     try:
         UsersCRUD.delete_user(db=db, user_id=user_id)
-        logger.debug(f'User with id {user_id} was deleted')
+        logger.debug(f"User with id {user_id} was deleted")
     except NotFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No such user')
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No such user"
+        )
     except Exception:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Internal server error occured')
-    
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error occured",
+        )
