@@ -75,7 +75,7 @@ http://localhost:8000
 * Example: Create a school
 
 ```JSON
-POST /principal/schools
+POST /schools
 {
   "name": "Springfield High School",
   "short_name": "SHS",
