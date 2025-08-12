@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Path, status, HTTPException, Depends
+from fastapi import APIRouter, Path, status, HTTPException, Depends, Query
 from typing import Annotated
 from sqlalchemy.orm import Session
 
@@ -19,8 +19,8 @@ users_router = APIRouter(
 )
 
 
-@users_router.get("/by-username", response_model=UserOut)
-def get_id(db: Annotated[Session, Depends(get_db)], username: str) -> User:
+@users_router.get("/", response_model=UserOut)
+def get_id(db: Annotated[Session, Depends(get_db)], username: Annotated[str, Query()]) -> User:
     try:
         return UsersCRUD.get_user_id(db=db, username=username)
     except NotFound:

@@ -6,7 +6,7 @@ from typing import Annotated
 from datetime import datetime, date, timezone
 
 
-from app.schemas.schedules import ScheduleData, ScheduleUpdateData
+from app.schemas.schedules import ScheduleData, ScheduleUpdateData, Week
 from app.schemas.users import UserTypes
 from app.exceptions.basic import NotAllowed, NotFound
 from app.db.models.types import Student, Teacher
@@ -126,8 +126,58 @@ class ScheduleCRUD:
         teacher_id: int | None = None,
     ):
         try:
-            today_of_week = date.today().strftime("%A").lower()
-            query = db.query(Schedule).filter(Schedule.day_of_week == today_of_week)
+            day_of_week = date.today().strftime("%A").lower()
+            query = db.query(Schedule).filter(Schedule.day_of_week == day_of_week)
+            match user.type:
+                case UserTypes.principal:
+                    principal: Principal = db.query(Principal).get(user.id)
+                    user_school_id = principal.school_id
+                case UserTypes.teacher:
+                    teacher: Teacher = db.query(Teacher).get(user.id)
+                    user_school_id = teacher.school_id
+                case UserTypes.student:
+                    student: Student = db.query(Student).get(user.id)
+                    user_school_id = student.school_id
+            if school_id != None:
+                if user.type != UserTypes.admin:
+                    logger.warning(
+                        f"principal with id {user.id} tried to access school with id {school_id} but {user.type} is not allowed"
+                    )
+                    raise NotAllowed(f"{user.type} cannot access other schools")
+                query = query.filter(Schedule.school_id == school_id)
+            else:
+                query = query.filter(Schedule.school_id == user_school_id)
+            if group_id:
+                query = query.filter(Schedule.group_id == group_id)
+            if teacher_id:
+                query = query.filter(Schedule.teacher_id == teacher_id)
+            if user_school_id:
+                create_attendance(
+                    db=db,
+                    schedules=query.all(),
+                    school_id=user_school_id,
+                    group_id=group_id,
+                )
+            else:
+                create_attendance(
+                    db=db, schedules=query.all(), school_id=school_id, group_id=group_id
+                )
+            return query.all()
+        except Exception as e:
+            logger.exception(f"Unexpected error occurred: {e}")
+            raise
+
+    @staticmethod
+    def get_schedule_day_of_week(
+        db: Session,
+        user: User,
+        day_of_week: Week,
+        school_id: int | None = None,
+        group_id: int | None = None,
+        teacher_id: int | None = None,
+    ):
+        try:
+            query = db.query(Schedule).filter(Schedule.day_of_week == day_of_week)
             match user.type:
                 case UserTypes.principal:
                     principal: Principal = db.query(Principal).get(user.id)

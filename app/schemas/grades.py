@@ -15,8 +15,6 @@ class AssignGradeData(BaseModel):
     value_letter: str | None = None
     value_numeric: float | None = None
     value_boolean: bool | None = None
-    schedule_id: int
-    student_id: int
 
 
 class GradeDataOut(BaseModel):

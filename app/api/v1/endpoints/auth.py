@@ -53,7 +53,7 @@ def login(
 
 
 @auth_router.post(
-    "/register/teacher",
+    "/register/teachers",
     status_code=status.HTTP_201_CREATED,
     response_model=RegistrationDataOut,
 )
@@ -73,7 +73,7 @@ def registration_teacher(
 
 
 @auth_router.post(
-    "/register/student",
+    "/register/students",
     status_code=status.HTTP_201_CREATED,
     response_model=RegistrationDataOut,
 )
@@ -93,7 +93,7 @@ def registration_student(
 
 
 @auth_router.post(
-    "/register/principal",
+    "/register/principals",
     status_code=status.HTTP_201_CREATED,
     response_model=PrincipalRegistrationDataOut,
     dependencies=[Depends(check_role(UserTypes.admin))],

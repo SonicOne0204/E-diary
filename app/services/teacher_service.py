@@ -71,11 +71,11 @@ class TeacherService:
             raise
 
     @staticmethod
-    def assign_grade(db: Session, user: User, data: AssignGradeData):
+    def assign_grade(db: Session, user: User, schedule_id: int, student_id: int , data: AssignGradeData):
         try:
-            student: Student = db.query(Student).get(data.student_id)
+            student: Student = db.query(Student).get(student_id)
             teacher: Teacher = db.query(Teacher).get(user.id)
-            lesson: Schedule = db.query(Schedule).get(data.schedule_id)
+            lesson: Schedule = db.query(Schedule).get(schedule_id)
             if teacher.school_id != student.school_id:
                 logger.warning(
                     f"User with id {user.id} tried to access school with id {student.school_id}"

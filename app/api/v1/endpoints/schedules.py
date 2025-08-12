@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import Annotated
@@ -12,6 +12,7 @@ from app.exceptions.basic import NotAllowed, NotFound
 from app.dependecies.auth import check_role
 from app.services.auth import get_current_user
 from app.schemas.users import UserTypes
+from app.schemas.schedules import Week
 
 import logging
 
@@ -61,21 +62,32 @@ def add_schedule(
         )
     ],
 )
-def get_schedules_today(
+def get_schedules_today_or_day_of_week(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
+    day_of_week: Annotated[Week | None, Query()] = None,
     school_id: int | None = None,
     group_id: int | None = None,
     teacher_id: int | None = None,
 ) -> list[Schedule]:
     try:
-        schedules = ScheduleCRUD.get_schedule_today(
-            db=db,
-            user=user,
-            school_id=school_id,
-            group_id=group_id,
-            teacher_id=teacher_id,
-        )
+        if day_of_week:
+            schedules = ScheduleCRUD.get_schedule_day_of_week(
+                db=db,
+                user=user,
+                day_of_week=day_of_week,
+                school_id=school_id,
+                group_id=group_id,
+                teacher_id=teacher_id
+            )
+        else:
+            schedules = ScheduleCRUD.get_schedule_today(
+                db=db,
+                user=user,
+                school_id=school_id,
+                group_id=group_id,
+                teacher_id=teacher_id,
+            )
         return schedules
     except NotFound:
         raise HTTPException(

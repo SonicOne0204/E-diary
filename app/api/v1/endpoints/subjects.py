@@ -23,7 +23,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-subject_router = APIRouter(prefix="/subjects", tags=["subject"])
+subject_router = APIRouter(prefix="/subjects", tags=["subjects"])
 
 
 @subject_router.post(

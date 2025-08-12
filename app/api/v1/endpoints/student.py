@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Path ,HTTPException, status
 from typing import Annotated
 from sqlalchemy.orm import Session
 
@@ -12,12 +12,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-student_router = APIRouter(prefix="/student", tags=["student"])
+student_router = APIRouter(prefix="/students", tags=["students"])
 
 
-@student_router.post("/{invitation_id}/accept")
+@student_router.post("invitations/{invitation_id}")
 def accept_invitation_endpoint(
-    invitation_id: int,
+    invitation_id: Annotated[int, Path()],
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
 ) -> dict:

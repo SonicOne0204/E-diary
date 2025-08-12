@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 school_router = APIRouter(
     prefix="/schools",
-    tags=["school"],
+    tags=["schools"],
 )
 
 

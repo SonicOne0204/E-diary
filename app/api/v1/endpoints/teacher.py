@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Path, HTTPException, status
 from typing import Annotated
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -12,6 +12,8 @@ from app.schemas.grades import AssignGradeData, GradeDataOut
 from app.schemas.users import UserTypes
 from app.db.models.users import User
 from app.db.models.grades import Grade
+from app.db.models.types import Student, Teacher
+from app.db.models.schedules import Schedule
 from app.db.models.attendance import Attendance
 from app.services.auth import get_current_user
 from app.dependecies.auth import check_role
@@ -21,25 +23,28 @@ import logging
 logger = logging.getLogger(__name__)
 
 teacher_router = APIRouter(
-    prefix="/teacher",
-    tags=["teacher"],
+    prefix="/teachers",
+    tags=["teachers"],
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.teacher]))],
 )
 
 
-@teacher_router.post(path="/mark-attendance", response_model=AttendanceOut)
+@teacher_router.post(path="/{teacher_id}/attendances/{attendance_id}/students/{student_id}", response_model=AttendanceOut)
 def mark_attendance_id(
     db: Annotated[Session, Depends(get_db)],
     data: MarkPresenceData,
+    teacher_id: Annotated[Teacher, Path()],
+    attendance_id: Annotated[Attendance, Path()],
+    student_id: Annotated[Student, Path()],
     user: Annotated[User, Depends(get_current_user)],
 ) -> Attendance:
     try:
         attendance = TeacherService.mark_presence(
             db=db,
             user=user,
-            student_id=data.student_id,
-            lesson_id=data.lesson_id,
-            teacher_id=data.teacher_id,
+            student_id=student_id,
+            lesson_id=attendance_id,
+            teacher_id=teacher_id,
             status=data.status,
         )
         return attendance
@@ -60,14 +65,16 @@ def mark_attendance_id(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@teacher_router.post(path="/assign-grade", response_model=GradeDataOut)
+@teacher_router.post(path="/schedules/{schedule_id}/students/{student_id}", response_model=GradeDataOut)
 def assign_grade(
     db: Annotated[Session, Depends(get_db)],
     data: AssignGradeData,
+    schedule_id: Annotated[Schedule, Path()],
+    student_id: Annotated[Student, Path()],
     user: Annotated[User, Depends(get_current_user)],
 ) -> Grade:
     try:
-        grade = TeacherService.assign_grade(db=db, user=user, data=data)
+        grade = TeacherService.assign_grade(db=db, user=user,schedule_id=schedule_id, student_id=student_id ,data=data)
         return grade
     except NoDataError as e:
         logger.info(f"No full data passed: {e}")
@@ -102,7 +109,7 @@ def assign_grade(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@teacher_router.post("/{invitation_id}/accept", status_code=200)
+@teacher_router.post("invitations/{invitation_id}", status_code=200)
 def accept_invitation_endpoint(
     invitation_id: int,
     db: Annotated[Session, Depends(get_db)],
