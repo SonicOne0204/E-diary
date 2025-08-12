@@ -85,7 +85,7 @@ POST /schools
 ```
 
 ---
-s
+
 ## Testing
 
 * Run tests using pytest:
