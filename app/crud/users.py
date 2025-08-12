@@ -11,12 +11,21 @@ logger = logging.getLogger(__name__)
 
 class UsersCRUD:
     @staticmethod
-    def get_user_id(db: Session, username: str):
+    def get_user_id(db: Session, page: int, limit: int, username: str):
         try:
-            user = db.query(User).filter(User.username == username).one_or_none()
-            if user == None:
-                raise NotFound("User not found")
-            return user
+            offset = (page - 1) * limit
+            if username:
+                users = db.query(User).filter(User.username == username).one_or_none()
+                if users == None:
+                    raise NotFound("User not found")
+            else:
+                users = (
+                    db.query(User)
+                    .offset(offset)
+                    .limit(limit)
+                    .filter(User.username == username)
+                )
+            return users
         except Exception as e:
             logger.exception(f"Unexpected error occured: {e}")
             raise

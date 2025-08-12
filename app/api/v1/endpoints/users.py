@@ -20,9 +20,14 @@ users_router = APIRouter(
 
 
 @users_router.get("/", response_model=UserOut)
-def get_id(db: Annotated[Session, Depends(get_db)], username: Annotated[str, Query()]) -> User:
+def get_user(
+    db: Annotated[Session, Depends(get_db)],
+    page: Annotated[int | None, Query(ge=1)] = 1,
+    limit: Annotated[int | None, Query(ge=1, le=50)] = 10,
+    username: str | None = None,
+) -> User:
     try:
-        return UsersCRUD.get_user_id(db=db, username=username)
+        return UsersCRUD.get_user_id(db=db, page=page, limit=limit, username=username)
     except NotFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No such user"

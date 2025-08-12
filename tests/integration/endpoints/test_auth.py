@@ -1,4 +1,3 @@
-
 from app.main import app
 from app.db.models.users import User
 from app.db.models.types import Principal

@@ -78,7 +78,7 @@ def get_schedules_today_or_day_of_week(
                 day_of_week=day_of_week,
                 school_id=school_id,
                 group_id=group_id,
-                teacher_id=teacher_id
+                teacher_id=teacher_id,
             )
         else:
             schedules = ScheduleCRUD.get_schedule_today(

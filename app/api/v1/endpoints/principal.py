@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path ,HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Annotated
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -6,10 +6,6 @@ from sqlalchemy.exc import IntegrityError
 from app.services.principal_service import PrincipalService
 from app.db.core import get_db
 from app.db.models.users import User
-from app.db.models.types import Teacher, Student
-from app.db.models.groups import Group
-from app.db.models.schools import School
-from app.db.models.subjects import Subject
 from app.db.models.invitations import Invitation
 from app.exceptions.teachers import TeacherAlreadyAssigned
 from app.exceptions.students import StudentAlreadyAssigned
@@ -30,7 +26,9 @@ principal_router = APIRouter(
 )
 
 
-@principal_router.post(path="/schools/{school_id}/teachers/{teacher_id}", response_model=InvitationOut)
+@principal_router.post(
+    path="/schools/{school_id}/teachers/{teacher_id}", response_model=InvitationOut
+)
 def invite_teacher_to_school_id(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
@@ -60,12 +58,14 @@ def invite_teacher_to_school_id(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@principal_router.post(path="/schools/{school_id}/students/{student_id}", response_model=InvitationOut)
+@principal_router.post(
+    path="/schools/{school_id}/students/{student_id}", response_model=InvitationOut
+)
 def invite_student_to_school_by_id(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
     school_id: int,
-    student_id: int
+    student_id: int,
 ) -> Invitation:
     try:
         invitation = PrincipalService.invite_student_to_school_id(
@@ -95,15 +95,13 @@ def assign_student_to_group_by_id(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
     group_id: int,
-    student_id: int
+    student_id: int,
 ) -> dict:
     try:
         PrincipalService.link_student_to_group_id(
             db=db, user=user, group_id=group_id, student_id=student_id
         )
-        return {
-            "detail": f"Student assigned to group "
-        }
+        return {"detail": "Student assigned to group "}
     except NotFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No such student"
@@ -127,14 +125,12 @@ def assign_teacher_to_subject_by_id(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
     subject_id: int,
-    teacher_id: int
+    teacher_id: int,
 ) -> dict:
     try:
         PrincipalService.link_teacher_to_subject_id(
             db=db, user=user, teacher_id=teacher_id, subject_id=subject_id
         )
-        return {
-            "detail": f"Teacher assigned to subject"
-        }
+        return {"detail": "Teacher assigned to subject"}
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

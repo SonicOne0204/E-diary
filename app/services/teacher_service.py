@@ -71,7 +71,13 @@ class TeacherService:
             raise
 
     @staticmethod
-    def assign_grade(db: Session, user: User, schedule_id: int, student_id: int , data: AssignGradeData):
+    def assign_grade(
+        db: Session,
+        user: User,
+        schedule_id: int,
+        student_id: int,
+        data: AssignGradeData,
+    ):
         try:
             student: Student = db.query(Student).get(student_id)
             teacher: Teacher = db.query(Teacher).get(user.id)

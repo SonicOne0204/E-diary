@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Annotated
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -12,8 +12,6 @@ from app.schemas.grades import AssignGradeData, GradeDataOut
 from app.schemas.users import UserTypes
 from app.db.models.users import User
 from app.db.models.grades import Grade
-from app.db.models.types import Student, Teacher
-from app.db.models.schedules import Schedule
 from app.db.models.attendance import Attendance
 from app.services.auth import get_current_user
 from app.dependecies.auth import check_role
@@ -29,7 +27,10 @@ teacher_router = APIRouter(
 )
 
 
-@teacher_router.post(path="/{teacher_id}/attendances/{attendance_id}/students/{student_id}", response_model=AttendanceOut)
+@teacher_router.post(
+    path="/{teacher_id}/attendances/{attendance_id}/students/{student_id}",
+    response_model=AttendanceOut,
+)
 def mark_attendance_id(
     db: Annotated[Session, Depends(get_db)],
     data: MarkPresenceData,
@@ -65,7 +66,9 @@ def mark_attendance_id(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@teacher_router.post(path="/schedules/{schedule_id}/students/{student_id}", response_model=GradeDataOut)
+@teacher_router.post(
+    path="/schedules/{schedule_id}/students/{student_id}", response_model=GradeDataOut
+)
 def assign_grade(
     db: Annotated[Session, Depends(get_db)],
     data: AssignGradeData,
@@ -74,7 +77,9 @@ def assign_grade(
     user: Annotated[User, Depends(get_current_user)],
 ) -> Grade:
     try:
-        grade = TeacherService.assign_grade(db=db, user=user,schedule_id=schedule_id, student_id=student_id ,data=data)
+        grade = TeacherService.assign_grade(
+            db=db, user=user, schedule_id=schedule_id, student_id=student_id, data=data
+        )
         return grade
     except NoDataError as e:
         logger.info(f"No full data passed: {e}")
