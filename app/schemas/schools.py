@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from app.schemas.grades import GradeSystems
 
 class SchoolData(BaseModel):
     name: str
@@ -7,6 +7,7 @@ class SchoolData(BaseModel):
     address: str
     country: str
     is_active: bool = True
+    grade_system: GradeSystems | None = None
 
 
 class SchoolOut(SchoolData):
