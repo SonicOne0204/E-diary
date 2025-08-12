@@ -33,9 +33,9 @@ teacher_router = APIRouter(
 def mark_attendance_id(
     db: Annotated[Session, Depends(get_db)],
     data: MarkPresenceData,
-    teacher_id: Annotated[Teacher, Path()],
-    attendance_id: Annotated[Attendance, Path()],
-    student_id: Annotated[Student, Path()],
+    teacher_id: int,
+    attendance_id: int,
+    student_id: int,
     user: Annotated[User, Depends(get_current_user)],
 ) -> Attendance:
     try:
@@ -69,8 +69,8 @@ def mark_attendance_id(
 def assign_grade(
     db: Annotated[Session, Depends(get_db)],
     data: AssignGradeData,
-    schedule_id: Annotated[Schedule, Path()],
-    student_id: Annotated[Student, Path()],
+    schedule_id: int,
+    student_id: int,
     user: Annotated[User, Depends(get_current_user)],
 ) -> Grade:
     try:

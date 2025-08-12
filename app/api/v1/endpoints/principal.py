@@ -34,8 +34,8 @@ principal_router = APIRouter(
 def invite_teacher_to_school_id(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
-    school_id: Annotated[School, Path()],
-    teacher_id: Annotated[Teacher, Path()],
+    school_id: int,
+    teacher_id: int,
 ) -> Invitation:
     try:
         invitation = PrincipalService.invite_teacher_to_school_id(
@@ -64,8 +64,8 @@ def invite_teacher_to_school_id(
 def invite_student_to_school_by_id(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
-    school_id: Annotated[School, Path()],
-    student_id: Annotated[Student, Path()]
+    school_id: int,
+    student_id: int
 ) -> Invitation:
     try:
         invitation = PrincipalService.invite_student_to_school_id(
@@ -94,8 +94,8 @@ def invite_student_to_school_by_id(
 def assign_student_to_group_by_id(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
-    group_id: Annotated[Group, Path()],
-    student_id: Annotated[Student, Path()]
+    group_id: int,
+    student_id: int
 ) -> dict:
     try:
         PrincipalService.link_student_to_group_id(
@@ -126,8 +126,8 @@ def assign_student_to_group_by_id(
 def assign_teacher_to_subject_by_id(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
-    subject_id: Annotated[Subject, Path()],
-    teacher_id: Annotated[Teacher, Path()]
+    subject_id: int,
+    teacher_id: int
 ) -> dict:
     try:
         PrincipalService.link_teacher_to_subject_id(
