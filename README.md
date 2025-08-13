@@ -44,25 +44,33 @@ git clone https://github.com/yourusername/e-diary.git
 cd e-diary
 ```
 
-2. Build and start the containers:
+2. Create your `.env` file from the example:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and set your own values (database credentials, secret key, etc.).
+
+3. Build and start the containers:
 
 ```bash
 docker-compose up --build
 ```
 
-3. Create an admin user (inside the running container):
+4. Create an admin user (inside the running container):
 
 ```bash
 docker exec -it e-diary-backend python scripts/create_admin.py
 ```
 
-4. The API will be available at:
+5. The API will be available at:
 
 ```
 http://localhost:8000
 ```
 
-5. Visit the automatic API docs:
+6. Visit the automatic API docs:
 
 * Swagger UI: `http://localhost:8000/docs`
 * ReDoc: `http://localhost:8000/redoc`
@@ -74,7 +82,7 @@ http://localhost:8000
 * Use REST endpoints to manage schools, students, teachers, subjects, attendance, and grades.
 * Example: Create a school
 
-```JSON
+```json
 POST /schools
 {
   "name": "Springfield High School",
@@ -93,7 +101,4 @@ POST /schools
 ```bash
 pytest
 ```
-
-
-
 
