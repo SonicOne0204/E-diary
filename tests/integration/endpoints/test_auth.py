@@ -23,7 +23,7 @@ def test_for_login_access_token(test_client, create_superuser):
 
 def test_for_principal_registration(test_client, create_school, test_get_db):
     response = test_client.post(
-        "/auth/register/principal",
+        "/auth/register/principals",
         json={
             "username": "principal",
             "password": "principal",
@@ -53,7 +53,7 @@ def test_for_principal_registration_role_not_allowed_error(test_client, create_s
     try:
         app.dependency_overrides[get_current_user] = override_get_current_user_teacher
         response = test_client.post(
-            "/auth/register/principal",
+            "/auth/register/principals",
             json={
                 "username": "principal",
                 "password": "principal",

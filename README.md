@@ -61,7 +61,7 @@ docker-compose up --build
 4. Create an admin user (inside the running container):
 
 ```bash
-docker exec -it e-diary-backend python scripts/create_admin.py
+docker exec backend python -m app.scripts.create_admin
 ```
 
 5. The API will be available at:

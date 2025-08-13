@@ -5,7 +5,7 @@ from app.core.security import hash_password
 
 def create_admin():
     db = SessionLocal()
-    admin = db.query(User).filter_by(role=UserTypes.admin).first()
+    admin = db.query(User).filter_by(type=UserTypes.admin).first()
     if admin:
         print("Admin user already exists.")
         return
@@ -15,7 +15,7 @@ def create_admin():
     new_admin = User(
         username=username,
         email=email,
-        role=UserTypes.admin,
+        type=UserTypes.admin,
         hashed_password=hash_password(password)
     )
     db.add(new_admin)

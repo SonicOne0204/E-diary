@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.schemas.users import UserTypes
 from typing import Literal
 
@@ -30,6 +30,9 @@ class PrincipalRegistrationData(RegistrationData):
 
 
 class RegistrationDataOut(BaseModel):
+    model_config = ConfigDict(
+        from_attributes=True
+    )
     id: int
     username: str
     email: str
@@ -37,13 +40,11 @@ class RegistrationDataOut(BaseModel):
     last_name: str
     type: UserTypes
 
-    class Config:
-        from_attributes = True
+   
 
 
 class PrincipalRegistrationDataOut(RegistrationDataOut):
-    school_id: int | None = None
-
+    school_id: int | None = None          
 
 class LoginData(BaseModel):
     username: str
