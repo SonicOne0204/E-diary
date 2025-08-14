@@ -34,11 +34,10 @@ subject_router = APIRouter(prefix="/subjects", tags=["subjects"])
 )
 def add_subject(
     db: Annotated[Session, Depends(get_db)],
-    user: Annotated[User, Depends(get_current_user)],
     data: SubjectData,
 ) -> Subject:
     try:
-        subject = SubjectCRUD.create_subject(db=db, user=user, data=data)
+        subject = SubjectCRUD.create_subject(db=db, data=data)
         return subject
     except IntegrityError:
         raise HTTPException(

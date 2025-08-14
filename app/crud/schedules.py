@@ -85,8 +85,7 @@ class ScheduleCRUD:
                 logger.info(f"School with id {data.school_id} not found")
                 raise NotFound("School not found")
             if (
-                data.school_id != principal.school_id
-                and user.type == UserTypes.principal
+                user.type == UserTypes.principal and data.school_id != principal.school_id
             ):
                 logger.warning(
                     f"Principal with id {principal.id} cannot asign schedule to school {school.id}"

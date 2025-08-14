@@ -1,9 +1,11 @@
 from sqlalchemy.orm import Session
 
 from app.db.models.users import User
+from app.db.models.types import Student
 from app.db.models.grades import Grade
 from app.schemas.users import UserTypes
 from app.exceptions.auth import RoleNotAllowed
+from app.exceptions.basic import NotAllowed, NotFound, NoDataError
 
 import logging
 
@@ -44,7 +46,13 @@ def sort_grades(student_grades: list[Grade]):
 
 
 class GradeService:
-    def __init__(self, db: Session, student: User):
+    def __init__(self, db: Session, user: User , student_id: int):
+        if user.type != UserTypes.admin:
+            if user.school_id != student.school_id:
+                raise NotAllowed('Not allowed to access other schools')
+        student: Student = db.query(Student).get(student_id)
+        if not student:
+            raise NotFound('Student not found')
         if student.type != UserTypes.student:
             raise RoleNotAllowed(
                 [UserTypes.admin, UserTypes.principal, UserTypes.teacher]
@@ -62,12 +70,14 @@ class GradeService:
                 )
                 continue
             grade_type = grade.pop(0)
-            if grade:
-                average = sum(grade) / len(grade)
-            else:
+            if not grade:
                 logger.debug(
                     f'Skipped "{grade}" of student {self.user}. Cannot average empty lists'
                 )
                 continue
+            else:
+                average = sum(grade) / len(grade)
             summary[grade_type] = average
+        if not summary:
+            raise NoDataError("Student doesn't grades yet")
         return summary

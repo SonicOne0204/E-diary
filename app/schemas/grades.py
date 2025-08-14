@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from enum import Enum
 
 
@@ -15,6 +15,7 @@ class AssignGradeData(BaseModel):
     value_letter: str | None = None
     value_numeric: float | None = None
     value_boolean: bool | None = None
+    marked_by: int | None = None
 
 
 class GradeDataOut(BaseModel):
@@ -29,5 +30,4 @@ class GradeDataOut(BaseModel):
     student_id: int
     marked_by: int | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

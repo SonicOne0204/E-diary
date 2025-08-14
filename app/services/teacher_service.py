@@ -10,6 +10,7 @@ from app.exceptions.basic import NoDataError, NotFound, NotAllowed
 from app.schemas.attendance import StatusOptions
 from app.schemas.grades import AssignGradeData, GradeSystems
 from app.schemas.invitations import Invitation_status
+from app.schemas.users import UserTypes
 from app.db.models.users import User
 from app.db.models.invitations import Invitation
 
@@ -82,16 +83,17 @@ class TeacherService:
             student: Student = db.query(Student).get(student_id)
             teacher: Teacher = db.query(Teacher).get(user.id)
             lesson: Schedule = db.query(Schedule).get(schedule_id)
-            if teacher.school_id != student.school_id:
-                logger.warning(
-                    f"User with id {user.id} tried to access school with id {student.school_id}"
-                )
-                raise NotAllowed("Cannot access other schools")
-            if teacher.school_id != lesson.school_id:
-                logger.warning(
-                    f"User with id {user.id} tried to access school with id {lesson.school_id}"
-                )
-                raise NotAllowed("Cannot access other schools")
+            if user.type != UserTypes.admin:
+                if teacher.school_id != student.school_id:
+                    logger.warning(
+                        f"User with id {user.id} tried to access school with id {student.school_id}"
+                    )
+                    raise NotAllowed("Cannot access other schools")
+                if teacher.school_id != lesson.school_id:
+                    logger.warning(
+                        f"User with id {user.id} tried to access school with id {lesson.school_id}"
+                    )
+                    raise NotAllowed("Cannot access other schools")
             grade = Grade()
             if (
                 data.grade_system == GradeSystems.five_num_sys
@@ -138,8 +140,10 @@ class TeacherService:
                     "Data is not full:\n"
                     f"Grade system:{data.grade_system} \nvalue_str: {data.value_letter}\nvalue_num: {data.value_numeric}\nvalue_bool: {data.value_boolean}"
                 )
+            data_dict.update({'student_id': student_id, 'schedule_id': schedule_id})
             for key, value in data_dict.items():
                 setattr(grade, key, value)
+            
             db.add(grade)
             db.commit()
             db.refresh(grade)
