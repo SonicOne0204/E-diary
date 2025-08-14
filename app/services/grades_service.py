@@ -11,11 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 def sort_grades(student_grades: list[Grade]):
-    grades_percent = []
-    grades_GPA = []
-    grades_5numeric = []
-    grades_passing = []
-    grades_letter = []
+    grades_percent = ["percent"]
+    grades_GPA = ["GPA"]
+    grades_5numeric = ["5numeric"]
+    grades_passing = ["passing"]
+    grades_letter = ["letter"]
 
     for student_grade in student_grades:
         if student_grade.value_percent != None:
@@ -53,15 +53,21 @@ class GradeService:
         self.grades = sort_grades(grades_raw)
         self.user = student
 
-    def avarege(self):
-        unawaiable_grades = ["grades_passing", "grades_letter"]
+    def average(self):
+        summary = {}
         for grade in self.grades:
-            if grade in unawaiable_grades:
+            if grade[0] == "letter" or grade[0] == "passing":
                 logger.debug(
                     f'Skipped "{grade}" of student {self.user}. Cannot average booleans or strings'
                 )
                 continue
-            average = grade / len(self.grades)
-            sum = {}
-            sum[grade] = average
-            return sum
+            grade_type = grade.pop(0)
+            if grade:
+                average = sum(grade) / len(grade)
+            else:
+                logger.debug(
+                    f'Skipped "{grade}" of student {self.user}. Cannot average empty lists'
+                )
+                continue
+            summary[grade_type] = average
+        return summary

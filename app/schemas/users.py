@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class UserTypes(str, Enum):
@@ -11,8 +11,10 @@ class UserTypes(str, Enum):
 
 class UserOut(BaseModel):
     id: int
-    username: str
+    username: str | None = None
     email: EmailStr
     first_name: str
     last_name: str
     type: str
+
+    model_config = ConfigDict(from_attributes=True)

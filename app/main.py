@@ -16,6 +16,7 @@ from app.api.v1.endpoints.teacher import teacher_router
 from app.api.v1.endpoints.attendance import attendances_router
 from app.api.v1.endpoints.student import student_router
 from app.api.v1.endpoints.invitations import invitations_router
+from app.api.v1.endpoints.grades import grades_router
 
 from app.logging.logger import *
 
@@ -33,6 +34,7 @@ app.include_router(teacher_router)
 app.include_router(attendances_router)
 app.include_router(student_router)
 app.include_router(invitations_router)
+app.include_router(grades_router)
 
 
 @app.exception_handler(RoleNotAllowed)

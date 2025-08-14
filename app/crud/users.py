@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, with_polymorphic
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.models.users import User
@@ -11,19 +11,19 @@ logger = logging.getLogger(__name__)
 
 class UsersCRUD:
     @staticmethod
-    def get_user_id(db: Session, page: int, limit: int, username: str):
+    def get_users(db: Session, page: int, limit: int, username: str | None = None):
         try:
             offset = (page - 1) * limit
             if username:
-                users = db.query(User).filter(User.username == username).one_or_none()
-                if users == None:
+                users = db.query(User).filter(User.username == username).all()
+                if not users:
                     raise NotFound("User not found")
             else:
                 users = (
-                    db.query(User)
+                    db.query(with_polymorphic(User, []))
                     .offset(offset)
                     .limit(limit)
-                    .filter(User.username == username)
+                    .all()
                 )
             return users
         except Exception as e:

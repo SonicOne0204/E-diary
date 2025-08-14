@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from app.schemas.grades import GradeSystems
 
+
 class SchoolData(BaseModel):
     name: str
     short_name: str | None = None
