@@ -140,10 +140,10 @@ class TeacherService:
                     "Data is not full:\n"
                     f"Grade system:{data.grade_system} \nvalue_str: {data.value_letter}\nvalue_num: {data.value_numeric}\nvalue_bool: {data.value_boolean}"
                 )
-            data_dict.update({'student_id': student_id, 'schedule_id': schedule_id})
+            data_dict.update({"student_id": student_id, "schedule_id": schedule_id})
             for key, value in data_dict.items():
                 setattr(grade, key, value)
-            
+
             db.add(grade)
             db.commit()
             db.refresh(grade)

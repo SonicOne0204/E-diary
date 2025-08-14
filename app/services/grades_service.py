@@ -46,13 +46,13 @@ def sort_grades(student_grades: list[Grade]):
 
 
 class GradeService:
-    def __init__(self, db: Session, user: User , student_id: int):
+    def __init__(self, db: Session, user: User, student_id: int):
         if user.type != UserTypes.admin:
             if user.school_id != student.school_id:
-                raise NotAllowed('Not allowed to access other schools')
+                raise NotAllowed("Not allowed to access other schools")
         student: Student = db.query(Student).get(student_id)
         if not student:
-            raise NotFound('Student not found')
+            raise NotFound("Student not found")
         if student.type != UserTypes.student:
             raise RoleNotAllowed(
                 [UserTypes.admin, UserTypes.principal, UserTypes.teacher]
