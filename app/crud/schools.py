@@ -99,31 +99,11 @@ class SchoolCRUD:
             raise
 
     @staticmethod
-    def get_school(
-        db: Session, user: User, name: str | None = None, school_id: int | None = None
-    ) -> School:
+    def get_school(db: Session, user: User, school_id: int) -> School:
         try:
-            if name and school_id:
-                logger.warning(
-                    f"User {user.id} sent conflicting params: name='{name}' and id={school_id}"
-                )
-                raise NotAllowed("Can't use both query parameters")
-
-            school = None
-            if name is not None:
-                school = db.query(School).filter(School.name == name).one_or_none()
-            elif school_id is not None:
-                school = db.query(School).filter(School.id == school_id).one_or_none()
-            else:
-                logger.warning(
-                    f"User {user.id} requested school without providing name or ID"
-                )
-                raise ValueError("Must provide either school name or ID")
-
+            school = db.query(School).get(school_id)
             if school is None:
-                logger.info(
-                    f"School not found (name='{name}', id={school_id}) by user {user.id}"
-                )
+                logger.info(f"School not found id={school_id} by user {user.id}")
                 raise NotFound("No such school")
             if user.type == UserTypes.principal:
                 principal: Principal = db.query(Principal).get(user.id)

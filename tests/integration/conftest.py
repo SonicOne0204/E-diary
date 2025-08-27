@@ -1,1 +1,0 @@
-from endpoints.fixtures import *

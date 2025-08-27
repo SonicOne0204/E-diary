@@ -41,17 +41,14 @@ def add_school(db: Annotated[Session, Depends(get_db)], data: SchoolData) -> Sch
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@school_router.get("/", response_model=dict)
+@school_router.get("/{school_id}", response_model=SchoolOut)
 def get_school(
     db: Annotated[Session, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
-    school_name: str | None = None,
-    school_id: int | None = None,
+    school_id: int,
 ) -> School:
     try:
-        school = SchoolCRUD.get_school(
-            db=db, user=user, name=school_name, school_id=school_id
-        )
+        school = SchoolCRUD.get_school(db=db, user=user, school_id=school_id)
         return school
     except NotFound:
         raise HTTPException(
