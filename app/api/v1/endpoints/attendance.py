@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from typing import Annotated
 
@@ -10,7 +10,7 @@ from app.schemas.users import UserTypes
 from app.db.models.attendance import Attendance
 from app.db.models.users import User
 from app.services.auth import get_current_user
-from app.exceptions.basic import NotFound, NotAllowed
+from app.exceptions.basic import NotFound
 from app.dependecies.auth import check_role
 
 import logging
@@ -35,8 +35,8 @@ attendances_router = APIRouter(prefix="/attendances", tags=["attendances"])
         )
     ],
 )
-def get_attendances(
-    db: Annotated[Session, Depends(get_db)],
+async def get_attendances(
+    db: Annotated[AsyncSession, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
     school_id: int,
     group_id: int | None = None,
@@ -44,7 +44,7 @@ def get_attendances(
     status_option: StatusOptions | None = None,
 ):
     try:
-        attendances: list[Attendance] = AttendanceCRUD.get_attendances_id(
+        attendances: list[Attendance] = await AttendanceCRUD.get_attendances_id(
             db=db,
             user=user,
             school_id=school_id,
@@ -57,10 +57,11 @@ def get_attendances(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="attendances not found"
         )
-    except NotAllowed as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        logger.exception(f"Error fetching attendances: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @attendances_router.get(
@@ -78,21 +79,22 @@ def get_attendances(
         )
     ],
 )
-def get_attendance(
-    db: Annotated[Session, Depends(get_db)],
+async def get_attendance(
+    db: Annotated[AsyncSession, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
     attendance_id: int,
 ):
     try:
-        attendance = AttendanceCRUD.get_attendance_id(
+        attendance = await AttendanceCRUD.get_attendance_id(
             db=db, user=user, attendance_id=attendance_id
         )
+        if not attendance:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Attendance not found"
+            )
         return attendance
-    except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Attendance not found"
-        )
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Error fetching attendance {attendance_id}: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -102,13 +104,15 @@ def get_attendance(
         Depends(check_role([UserTypes.admin, UserTypes.principal, UserTypes.teacher]))
     ],
 )
-def delete_attendance(
-    db: Annotated[Session, Depends(get_db)],
+async def delete_attendance(
+    db: Annotated[AsyncSession, Depends(get_db)],
     user: Annotated[User, Depends(get_current_user)],
     attendance_id: int,
 ):
     try:
-        AttendanceCRUD.delete_attendance(db=db, user=user, attendance_id=attendance_id)
+        await AttendanceCRUD.delete_attendance(
+            db=db, user=user, attendance_id=attendance_id
+        )
         return {"detail": f"attendance with id {attendance_id} was deleted"}
     except NotFound:
         raise HTTPException(
@@ -118,5 +122,6 @@ def delete_attendance(
         raise HTTPException(
             status_code=400, detail="Cannot delete: related records exist"
         )
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Error deleting attendance {attendance_id}: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

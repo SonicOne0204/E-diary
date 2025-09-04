@@ -95,55 +95,51 @@ class TeacherService:
                     )
                     raise NotAllowed("Cannot access other schools")
             grade = Grade()
-            if (
-                data.grade_system == GradeSystems.five_num_sys
-                and data.value_numeric != None
-            ):
-                data_dict = data.model_dump(
-                    exclude_unset=True,
-                    exclude={"value_boolean", "value_str", "value_numeric"},
-                )
-                data_dict.update({"value_5numerical": data.value_numeric})
-            elif (
-                data.grade_system == GradeSystems.GPA_sys and data.value_numeric != None
-            ):
-                data_dict = data.model_dump(
-                    exclude_unset=True,
-                    exclude={"value_boolean", "value_str", "value_numeric"},
-                )
-                data_dict.update({"value_GPA": data.value_numeric})
-            elif (
-                data.grade_system == GradeSystems.percent_sys
-                and data.value_numeric != None
-            ):
-                data_dict = data.model_dump(
-                    exclude_unset=True,
-                    exclude={"value_boolean", "value_str", "value_numeric"},
-                )
-                data_dict.update({"value_percent": data.value_numeric})
-            elif (
-                data.grade_system == GradeSystems.letter_sys
-                and data.value_letter != None
-            ):
-                data_dict = data.model_dump(
-                    exclude_unset=True, exclude={"value_boolean", "value_numeric"}
-                )
-            elif (
-                data.grade_system == GradeSystems.pass_fail_sys
-                and data.value_boolean != None
-            ):
-                data_dict = data.model_dump(
-                    exclude_unset=True, exclude={"value_numeric", "value_str"}
-                )
-            else:
-                raise NoDataError(
-                    "Data is not full:\n"
-                    f"Grade system:{data.grade_system} \nvalue_str: {data.value_letter}\nvalue_num: {data.value_numeric}\nvalue_bool: {data.value_boolean}"
-                )
+            match (data.grade_system, data.value_numeric, data.value_letter, data.value_boolean):
+                case (GradeSystems.five_num_sys, numeric, None, None) if numeric is not None:
+                    data_dict = data.model_dump(
+                        exclude_unset=True,
+                        exclude={"value_boolean", "value_str", "value_numeric"},
+                    )
+                    data_dict.update({"value_5numerical": numeric})
+                
+                case (GradeSystems.GPA_sys, numeric, None, None) if numeric is not None:
+                    data_dict = data.model_dump(
+                        exclude_unset=True,
+                        exclude={"value_boolean", "value_str", "value_numeric"},
+                    )
+                    data_dict.update({"value_GPA": numeric})
+                
+                case (GradeSystems.percent_sys, numeric, None, None) if numeric is not None:
+                    data_dict = data.model_dump(
+                        exclude_unset=True,
+                        exclude={"value_boolean", "value_str", "value_numeric"},
+                    )
+                    data_dict.update({"value_percent": numeric})
+                
+                case (GradeSystems.letter_sys, None, letter, None) if letter is not None:
+                    data_dict = data.model_dump(
+                        exclude_unset=True, 
+                        exclude={"value_boolean", "value_numeric"}
+                    )
+                
+                case (GradeSystems.pass_fail_sys, None, None, boolean) if boolean is not None:
+                    data_dict = data.model_dump(
+                        exclude_unset=True, 
+                        exclude={"value_numeric", "value_str"}
+                    )
+                
+                case _:
+                    raise NoDataError(
+                        "Data is not full:\n"
+                        f"Grade system:{data.grade_system} \n"
+                        f"value_str: {data.value_letter}\n"
+                        f"value_num: {data.value_numeric}\n"
+                        f"value_bool: {data.value_boolean}"
+                    )
             data_dict.update({"student_id": student_id, "schedule_id": schedule_id})
             for key, value in data_dict.items():
                 setattr(grade, key, value)
-
             db.add(grade)
             db.commit()
             db.refresh(grade)

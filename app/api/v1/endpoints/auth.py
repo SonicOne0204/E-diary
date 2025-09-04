@@ -1,5 +1,5 @@
 from fastapi import status, Depends, APIRouter, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -31,24 +31,25 @@ from app.exceptions.auth import (
 from app.dependecies.auth import check_role
 
 
-auth_router = APIRouter(prefix="/auth", tags=["authenticaiton"])
+auth_router = APIRouter(prefix="/auth", tags=["authentication"])
 
 logger = logging.getLogger(__name__)
 
 
 @auth_router.post("/login", status_code=status.HTTP_200_OK, response_model=Token)
-def login(
-    db: Annotated[Session, Depends(get_db)],
+async def login(
+    db: Annotated[AsyncSession, Depends(get_db)],
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
     try:
-        token = login_user(db=db, user_data=user_data)
+        token = await login_user(db=db, user_data=user_data)
         return token
     except WrongPassword as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except UserDoesNotExist as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Unexpected error during login: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -57,18 +58,19 @@ def login(
     status_code=status.HTTP_201_CREATED,
     response_model=RegistrationDataOut,
 )
-def registration_teacher(
-    db: Annotated[Session, Depends(get_db)], user_data: TeacherRegistrationData
+async def registration_teacher(
+    db: Annotated[AsyncSession, Depends(get_db)], user_data: TeacherRegistrationData
 ) -> Teacher:
     try:
-        return register_teacher(db=db, user_data=user_data)
+        return await register_teacher(db=db, user_data=user_data)
     except UserExists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists"
         )
     except RoleNotAllowed:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Unexpected error during teacher registration: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -77,18 +79,19 @@ def registration_teacher(
     status_code=status.HTTP_201_CREATED,
     response_model=RegistrationDataOut,
 )
-def registration_student(
-    db: Annotated[Session, Depends(get_db)], user_data: StudentRegistrationData
+async def registration_student(
+    db: Annotated[AsyncSession, Depends(get_db)], user_data: StudentRegistrationData
 ) -> Student:
     try:
-        return register_student(db=db, user_data=user_data)
+        return await register_student(db=db, user_data=user_data)
     except UserExists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists"
         )
     except RoleNotAllowed:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Unexpected error during student registration: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -98,16 +101,17 @@ def registration_student(
     response_model=PrincipalRegistrationDataOut,
     dependencies=[Depends(check_role(UserTypes.admin))],
 )
-def registration_principal(
-    db: Annotated[Session, Depends(get_db)], user_data: PrincipalRegistrationData
+async def registration_principal(
+    db: Annotated[AsyncSession, Depends(get_db)], user_data: PrincipalRegistrationData
 ) -> Principal:
     try:
-        return register_principal(db=db, user_data=user_data)
+        return await register_principal(db=db, user_data=user_data)
     except UserExists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists"
         )
     except RoleNotAllowed:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Unexpected error during principal registration: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

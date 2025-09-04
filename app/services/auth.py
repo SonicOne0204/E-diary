@@ -1,6 +1,7 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from typing import Annotated
 from jose import jwt
 from jose.exceptions import JWTError
@@ -30,11 +31,12 @@ logger = logging.getLogger(__name__)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-def login_user(db: Session, user_data: OAuth2PasswordRequestForm) -> Token:
+async def login_user(db: Session, user_data: OAuth2PasswordRequestForm) -> Token:
     try:
         username = user_data.username
         password = user_data.password
-        user = db.query(User).filter(User.username == username).first()
+        result = await db.execute(select(User).where(User.username == username))
+        user = result.scalar_one_or_none()
         if user == None:
             raise UserDoesNotExist("User not found")
         verify = verify_password(password, user.hashed_password)
@@ -116,13 +118,14 @@ def register_principal(db: Session, user_data: PrincipalRegistrationData):
         raise
 
 
-def get_current_user(
+async def get_current_user(
     db: Annotated[Session, Depends(get_db)],
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> User:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
-        user = db.query(User).get(payload.get("id"))
+        result = await db.execute(select(User).where(User.id == payload.get("id")))
+        user = result.scalar_one_or_none()
         if user == None:
             logger.info(f'User with id {payload["id"]} does not exist')
             raise UserDoesNotExist("User dose not exist")
