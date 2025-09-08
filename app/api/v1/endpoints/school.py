@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Path
 from typing import Annotated
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.core import get_db
+from app.db.core import get_async_db
 from app.crud.schools import SchoolCRUD
 from app.schemas.schools import SchoolData, SchoolOut, SchoolUpdate, SchoolUpdateOut
 from app.exceptions.basic import NotFound, NotAllowed
@@ -28,9 +28,12 @@ school_router = APIRouter(
     response_model=SchoolOut,
     dependencies=[Depends(check_role(UserTypes.admin))],
 )
-def add_school(db: Annotated[Session, Depends(get_db)], data: SchoolData) -> School:
+async def add_school(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    data: SchoolData,
+) -> School:
     try:
-        school = SchoolCRUD.create_school(db=db, data=data)
+        school = await SchoolCRUD.create_school(db=db, data=data)
         return school
     except ValueError:
         raise HTTPException(
@@ -42,13 +45,13 @@ def add_school(db: Annotated[Session, Depends(get_db)], data: SchoolData) -> Sch
 
 
 @school_router.get("/{school_id}", response_model=SchoolOut)
-def get_school(
-    db: Annotated[Session, Depends(get_db)],
+async def get_school(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     school_id: int,
 ) -> School:
     try:
-        school = SchoolCRUD.get_school(db=db, user=user, school_id=school_id)
+        school = await SchoolCRUD.get_school(db=db, user=user, school_id=school_id)
         return school
     except NotFound:
         raise HTTPException(
@@ -63,13 +66,13 @@ def get_school(
     response_model=SchoolUpdateOut,
     dependencies=[Depends(check_role(UserTypes.admin))],
 )
-def update_school_data(
-    db: Annotated[Session, Depends(get_db)],
+async def update_school_data(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     school_id: Annotated[int, Path()],
     data: SchoolUpdate,
 ) -> School:
     try:
-        updated_school = SchoolCRUD.update_school_data(
+        updated_school = await SchoolCRUD.update_school_data(
             db=db, school_id=school_id, data=data
         )
         return updated_school
@@ -92,13 +95,13 @@ def update_school_data(
     response_model=bool,
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))],
 )
-def delete_school(
-    db: Annotated[Session, Depends(get_db)],
+async def delete_school(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     school_id: Annotated[int, Path()],
 ) -> None:
     try:
-        SchoolCRUD.delete_school(db=db, user=user, school_id=school_id)
+        await SchoolCRUD.delete_school(db=db, user=user, school_id=school_id)
         logger.debug(f"school with id {school_id} was deleted")
     except NotFound:
         raise HTTPException(
@@ -116,13 +119,13 @@ def delete_school(
     response_model=list[SchoolOut],
     dependencies=[Depends(check_role(UserTypes.admin))],
 )
-def get_schools(
-    db: Annotated[Session, Depends(get_db)],
+async def get_schools(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     country: str | None = None,
     is_active: bool | None = None,
 ) -> list[School]:
     try:
-        schools = SchoolCRUD.get_schools(db=db, country=country, is_active=is_active)
+        schools = await SchoolCRUD.get_schools(db=db, country=country, is_active=is_active)
         return schools
     except NotFound:
         raise HTTPException(

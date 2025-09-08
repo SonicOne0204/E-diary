@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from typing import Annotated
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
 from app.services.teacher_service import TeacherService
-from app.db.core import get_db
+from app.db.core import get_async_db
 from app.exceptions.basic import NoDataError, NotAllowed, NotFound
 from app.schemas.teachers import MarkPresenceData
 from app.schemas.attendance import AttendanceOut
@@ -28,11 +28,11 @@ teacher_router = APIRouter(
 
 
 @teacher_router.post(
-    path="/{teacher_id}/attendances/{attendance_id}/students/{student_id}",
+    "/{teacher_id}/attendances/{attendance_id}/students/{student_id}",
     response_model=AttendanceOut,
 )
-def mark_attendance_id(
-    db: Annotated[Session, Depends(get_db)],
+async def mark_attendance_id(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     data: MarkPresenceData,
     teacher_id: int,
     attendance_id: int,
@@ -40,7 +40,7 @@ def mark_attendance_id(
     user: Annotated[User, Depends(get_current_user)],
 ) -> Attendance:
     try:
-        attendance = TeacherService.mark_presence(
+        attendance = await TeacherService.mark_presence(
             db=db,
             user=user,
             student_id=student_id,
@@ -50,34 +50,29 @@ def mark_attendance_id(
         )
         return attendance
     except NotFound as e:
-        if "teacher" in str(e).lower():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="No such teacher"
-            )
-        elif "student" in str(e).lower():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="No such Student"
-            )
-        elif "schedule" in str(e).lower():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="No such lesson"
-            )
+        msg = str(e).lower()
+        if "teacher" in msg:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such teacher")
+        elif "student" in msg:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such Student")
+        elif "schedule" in msg:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such lesson")
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @teacher_router.post(
-    path="/schedules/{schedule_id}/students/{student_id}", response_model=GradeDataOut
+    "/schedules/{schedule_id}/students/{student_id}", response_model=GradeDataOut
 )
-def assign_grade(
-    db: Annotated[Session, Depends(get_db)],
+async def assign_grade(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     data: AssignGradeData,
     schedule_id: int,
     student_id: int,
     user: Annotated[User, Depends(get_current_user)],
 ) -> Grade:
     try:
-        grade = TeacherService.assign_grade(
+        grade = await TeacherService.assign_grade(
             db=db, user=user, schedule_id=schedule_id, student_id=student_id, data=data
         )
         return grade
@@ -90,50 +85,42 @@ def assign_grade(
     except NotAllowed as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except IntegrityError as e:
-        if "unique constraint" in str(e.orig):
+        err_msg = str(e.orig)
+        if "unique constraint" in err_msg:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="This grade is already assigned",
             )
-        elif '"schedules"' in str(e.orig):
+        elif '"schedules"' in err_msg:
             logger.info(f"Schedule with id {data.schedule_id} is not found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="No such lesson/schedule"
-            )
-        elif '"students"' in str(e.orig):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such lesson/schedule")
+        elif '"students"' in err_msg:
             logger.info(f"Student with id {data.student_id} is not found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="No such Student"
-            )
-        elif '"teachers"' in str(e.orig):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such Student")
+        elif '"teachers"' in err_msg:
             logger.info(f"Teacher with id {data.marked_by} is not found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="No such teacher"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such teacher")
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@teacher_router.post("invitations/{invitation_id}", status_code=200)
-def accept_invitation_endpoint(
+@teacher_router.post("/invitations/{invitation_id}", status_code=200)
+async def accept_invitation_endpoint(
     invitation_id: int,
-    db: Annotated[Session, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
 ) -> dict:
     try:
-        return TeacherService.accept_invitation(
+        return await TeacherService.accept_invitation(
             db=db, user=user, invitation_id=invitation_id
         )
     except NotFound as e:
-        if "invitation" in str(e).lower():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Invitation not found"
-            )
-        if "teacher" in str(e).lower():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Teacher not found"
-            )
+        msg = str(e).lower()
+        if "invitation" in msg:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invitation not found")
+        if "teacher" in msg:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Teacher not found")
     except NotAllowed as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

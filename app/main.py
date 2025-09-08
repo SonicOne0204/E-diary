@@ -38,7 +38,7 @@ app.include_router(grades_router)
 
 
 @app.exception_handler(RoleNotAllowed)
-def role_exception_handler(request: Request, exc: RoleNotAllowed):
+async def role_exception_handler(request: Request, exc: RoleNotAllowed):
     return JSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
         content={"detail": f"roles '{exc.roles}' are not allowed"},

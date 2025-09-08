@@ -1,48 +1,49 @@
-import pytest
-from sqlalchemy import create_engine
+import asyncio
+import pytest, pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.core.settings import settings
 from app.db.models.schools import School
-from app.db.core import SessionLocal, Base, get_db
+from app.db.core import Base, get_async_db
 from app.main import app
 
-test_engine = create_engine(settings.TEST_DB_URL)
-TestSessionLocal = sessionmaker(bind=test_engine, autoflush=False, autocommit=False)
+test_engine = create_async_engine(settings.TEST_DB_URL, echo=True, future=True)
+TestSessionLocal = sessionmaker(bind=test_engine, class_=AsyncSession ,autoflush=False, autocommit=False)
 
 
-@pytest.fixture(autouse=True, scope="function")
-def setup_db():
-    Base.metadata.drop_all(bind=test_engine)
-    Base.metadata.create_all(bind=test_engine)
+@pytest_asyncio.fixture(scope='function')
+async def setup_db():
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
     yield
-    Base.metadata.drop_all(bind=test_engine)
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 
-@pytest.fixture()
-def get_test_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+@pytest_asyncio.fixture()
+async def get_test_db(setup_db):
+    async with TestSessionLocal() as db:
+        yield db 
 
-
-@pytest.fixture()
-def create_school(get_test_db):
+@pytest_asyncio.fixture()
+async def create_school(get_test_db):
+    db = get_test_db
     school = School(
         name="School", short_name="SH", country="China", address="ShiaChan street 32"
     )
-    get_test_db.add(school)
-    return school
+    db.add(school)
+    await db.commit() 
+    await db.refresh(school)  
+    
+    yield school
+    
 
 
-def override_get_db():
-    db = TestSessionLocal()
-    try:
+async def override_get_db():
+    async with TestSessionLocal() as db:
         yield db
-    finally:
-        db.close()
 
 
-app.dependency_overrides[get_db] = override_get_db
+app.dependency_overrides[get_async_db] = override_get_db

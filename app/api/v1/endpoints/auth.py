@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 import logging
 
-from app.db.core import get_db
+from app.db.core import get_async_db
 from app.db.models.types import Teacher, Student, Principal
 from app.schemas.auth import (
     Token,
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 @auth_router.post("/login", status_code=status.HTTP_200_OK, response_model=Token)
 async def login(
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
     try:
@@ -59,7 +59,7 @@ async def login(
     response_model=RegistrationDataOut,
 )
 async def registration_teacher(
-    db: Annotated[AsyncSession, Depends(get_db)], user_data: TeacherRegistrationData
+    db: Annotated[AsyncSession, Depends(get_async_db)], user_data: TeacherRegistrationData
 ) -> Teacher:
     try:
         return await register_teacher(db=db, user_data=user_data)
@@ -80,7 +80,7 @@ async def registration_teacher(
     response_model=RegistrationDataOut,
 )
 async def registration_student(
-    db: Annotated[AsyncSession, Depends(get_db)], user_data: StudentRegistrationData
+    db: Annotated[AsyncSession, Depends(get_async_db)], user_data: StudentRegistrationData
 ) -> Student:
     try:
         return await register_student(db=db, user_data=user_data)
@@ -102,7 +102,7 @@ async def registration_student(
     dependencies=[Depends(check_role(UserTypes.admin))],
 )
 async def registration_principal(
-    db: Annotated[AsyncSession, Depends(get_db)], user_data: PrincipalRegistrationData
+    db: Annotated[AsyncSession, Depends(get_async_db)], user_data: PrincipalRegistrationData
 ) -> Principal:
     try:
         return await register_principal(db=db, user_data=user_data)

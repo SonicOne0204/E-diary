@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from typing import Annotated
 
 from app.crud.attendance import AttendanceCRUD
-from app.db.core import get_db
+from app.db.core import get_async_db
 from app.schemas.attendance import StatusOptions
 from app.schemas.users import UserTypes
 from app.db.models.attendance import Attendance
@@ -36,7 +36,7 @@ attendances_router = APIRouter(prefix="/attendances", tags=["attendances"])
     ],
 )
 async def get_attendances(
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     school_id: int,
     group_id: int | None = None,
@@ -80,7 +80,7 @@ async def get_attendances(
     ],
 )
 async def get_attendance(
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     attendance_id: int,
 ):
@@ -105,7 +105,7 @@ async def get_attendance(
     ],
 )
 async def delete_attendance(
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     attendance_id: int,
 ):

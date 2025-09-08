@@ -1,8 +1,9 @@
+import pytest
 
 from app.db.models.users import User
 from app.db.models.types import Teacher, Student
 from app.services.auth import get_current_user
-from fastapi.testclient import TestClient
+from httpx import AsyncClient, ASGITransport
 from app.main import app
 
 
@@ -38,33 +39,12 @@ def override_user_student():
     )  # password is still admin
     return user
 
-
-client = TestClient(app=app)
-
 app.dependency_overrides[get_current_user] = override_user_admin
 
-
-def test_principal_registration(create_school):
-    response = client.post(
-        "auth/register/principals",
-        json={
-            "username": "principal",
-            "password": "principal",
-            "email": "pricnipal@gmail.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "school_id": create_school.id,
-        },
-    )
-    response_json = response.json()
-    assert response.status_code == 201
-    assert response_json["type"] == "principal"
-
-
-def test_principal_registration_wrong_role(create_school):
-    try:
-        app.dependency_overrides[get_current_user] = override_user_teacher
-        response = client.post(
+@pytest.mark.asyncio
+async def test_principal_registration(create_school):
+    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as client:
+        response = await client.post(
             "auth/register/principals",
             json={
                 "username": "principal",
@@ -72,24 +52,46 @@ def test_principal_registration_wrong_role(create_school):
                 "email": "pricnipal@gmail.com",
                 "first_name": "John",
                 "last_name": "Doe",
-                "school_id": create_school.id,
+                "school_id": create_school.id
             },
         )
+    response_json = response.json()
+    assert response.status_code == 201
+    assert response_json["type"] == "principal"
+
+@pytest.mark.asyncio
+async def test_principal_registration_wrong_role(create_school):
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as client:
+            app.dependency_overrides[get_current_user] = override_user_teacher
+            response = await client.post(
+                "auth/register/principals",
+                json={
+                    "username": "principal",
+                    "password": "principal",
+                    "email": "pricnipal@gmail.com",
+                    "first_name": "John",
+                    "last_name": "Doe",
+                    "school_id": create_school.id,
+                },
+            )
         assert response.status_code == 403
     finally:
         app.dependency_overrides[get_current_user] = override_user_admin
 
-
-def test_school_crud():
-    response_post = client.post(
-        "/schools/",
-        json={
-            "name": "school",
-            "short_name": "sh",
-            "country": "France",
-            "address": "Juan Pero street 61",
-        },
-    )
+@pytest.mark.asyncio
+async def test_school_crud():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as client:
+        response_post = await client.post(
+            "/schools/",
+            json={
+                "name": "school",
+                "short_name": "sh",
+                "country": "France",
+                "address": "Juan Pero street 61",
+                "grade_system": "letter"
+            },
+        )
     assert response_post.status_code == 201
     created_school = response_post.json()
     school_id = created_school["id"]

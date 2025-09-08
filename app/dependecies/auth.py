@@ -11,7 +11,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def check_role(required_roles: list[UserTypes] | UserTypes):
-    def role_checker(user: Annotated[User, Depends(get_current_user)]):
+    async def role_checker(user: Annotated[User, Depends(get_current_user)]):
         if isinstance(required_roles, list):
             if user.type in required_roles:
                 return user

@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.future import select
 
 from app.db.models.subjects import Subject
 from app.db.models.users import User
@@ -15,138 +16,134 @@ logger = logging.getLogger(__name__)
 
 class SubjectCRUD:
     @staticmethod
-    def create_subject(db: Session, data: SubjectData) -> Subject:
+    async def create_subject(db: AsyncSession, data: SubjectData) -> Subject:
         try:
             subject = Subject()
             for key, value in data.model_dump(exclude_unset=True).items():
                 setattr(subject, key, value)
             db.add(subject)
-            db.commit()
-            db.refresh(subject)
+            await db.commit()
+            await db.refresh(subject)
             return subject
         except IntegrityError as e:
-            db.rollback()
-            logger.error(f"Integrity error occured: {e}")
+            await db.rollback()
+            logger.error(f"Integrity error occurred: {e}")
             raise
         except SQLAlchemyError as e:
-            db.rollback()
-            logger.error(f"Error getting db: {e}")
+            await db.rollback()
+            logger.error(f"Error in DB: {e}")
             raise
         except Exception as e:
-            logger.exception(f"Unexpected error occured: {e}")
+            await db.rollback()
+            logger.exception(f"Unexpected error occurred: {e}")
             raise
 
     @staticmethod
-    def delete_subject(db: Session, user: User, subject_id: int):
+    async def delete_subject(db: AsyncSession, user: User, subject_id: int):
         try:
-            subject: Subject = db.query(Subject).get(subject_id)
+            subject: Subject = await db.get(Subject, subject_id)
             if not subject:
-                logger.info(f"subject with id {subject_id} is not found")
-                raise NotFound(f"subject with id {subject_id} not found")
+                logger.info(f"Subject with id {subject_id} not found")
+                raise NotFound(f"Subject with id {subject_id} not found")
+
             if user.type == UserTypes.principal:
-                principal: Principal = db.query(Principal).get(user.id)
+                principal: Principal = await db.get(Principal, user.id)
                 if principal.school_id != subject.school_id:
                     logger.warning(
-                        f"User with id {user.id} tried to delete subject with id {subject_id}, but from another school"
+                        f"User {user.id} tried to delete subject {subject_id} from another school"
                     )
-                    raise NotAllowed("Cannot delete from other schools")
-            db.delete(subject)
-            db.commit()
-            logger.info(f"subject with id {subject_id} was deleted")
+                    raise NotAllowed("Cannot delete subjects from other schools")
+
+            await db.delete(subject)
+            await db.commit()
+            logger.info(f"Subject with id {subject_id} was deleted")
             return True
         except SQLAlchemyError as e:
-            logger.error(f"Error in db: {e}")
+            await db.rollback()
+            logger.error(f"DB error: {e}")
             raise
         except Exception as e:
-            logger.exception(f"Unexpected error occured: {e}")
+            await db.rollback()
+            logger.exception(f"Unexpected error occurred: {e}")
             raise
 
     @staticmethod
-    def update_subject_data(db: Session, subject_id: int, data: SubjectUpdate):
-        subject: Subject = db.query(Subject).get(subject_id)
-        if subject == None:
+    async def update_subject_data(db: AsyncSession, subject_id: int, data: SubjectUpdate):
+        subject: Subject = await db.get(Subject, subject_id)
+        if not subject:
             logger.info(f"Subject with id {subject_id} not found")
             raise NotFound("No such subject")
         try:
             for key, value in data.model_dump(exclude_unset=True).items():
                 setattr(subject, key, value)
-            db.commit()
-            db.refresh(subject)
+            await db.commit()
+            await db.refresh(subject)
             return subject
         except IntegrityError as e:
-            logger.error(f"Integrity error occured: {e}")
-            raise ValueError(f'subject name "{subject.name}" is already taken')
+            await db.rollback()
+            logger.error(f"Integrity error occurred: {e}")
+            raise ValueError(f'Subject name "{subject.name}" is already taken')
         except SQLAlchemyError as e:
-            logger.error(f"Unexpected error in DB occured: {e}")
-            raise RuntimeError("Unexcpeted error in DB")
+            await db.rollback()
+            logger.error(f"Unexpected DB error occurred: {e}")
+            raise RuntimeError("Unexpected error in DB")
+        except Exception as e:
+            await db.rollback()
+            logger.exception(f"Unexpected error occurred: {e}")
+            raise
 
     @staticmethod
-    def get_subject_id(db: Session, user: User, subject_id: int):
+    async def get_subject_id(db: AsyncSession, user: User, subject_id: int):
         try:
-            subject: Subject = db.query(Subject).get(subject_id)
+            subject: Subject = await db.get(Subject, subject_id)
+            if not subject:
+                raise NotFound(f"Subject with id {subject_id} not found")
+
             if user.type == UserTypes.principal:
-                principal: Principal = db.query(Principal).get(user.id)
+                principal: Principal = await db.get(Principal, user.id)
                 if principal.school_id != subject.school_id:
-                    logger.warning(
-                        "User with id {user.id} tried to access subject with id {subject_id}. Not allowed to access other schools"
-                    )
-                    raise NotAllowed("Cannot access other schools")
+                    raise NotAllowed("Cannot access subjects from other schools")
             elif user.type == UserTypes.teacher:
-                teacher: Teacher = db.query(Teacher).get(user.id)
-                if subject.school_id != teacher.id:
-                    logger.warning(
-                        "User with id {user.id} tried to access subject with id {subject_id}. Not allowed to access other schools"
-                    )
-                    raise NotAllowed(
-                        "Cannot access subject from other teachers or schools"
-                    )
+                teacher: Teacher = await db.get(Teacher, user.id)
+                if teacher.school_id != subject.school_id:
+                    raise NotAllowed("Cannot access subjects from other schools")
             elif user.type == UserTypes.student:
-                student: Student = db.query(Student).get(user.id)
-                if subject.school_id != student.school_id:
-                    logger.warning(
-                        "User with id {user.id} tried to access subject with id {subject_id}. Not allowed to access other schools"
-                    )
-                    raise NotAllowed("Cannot access subject from other schools")
+                student: Student = await db.get(Student, user.id)
+                if student.school_id != subject.school_id:
+                    raise NotAllowed("Cannot access subjects from other schools")
+
             return subject
-        except IntegrityError:
-            logger.info(f"Attednace not found with if {subject_id}")
-            raise
         except SQLAlchemyError as e:
-            logger.error(f"Error in db: {e}")
+            logger.error(f"DB error: {e}")
             raise
         except Exception as e:
-            logger.exception(f"Unexpected error occured: {e}")
+            logger.exception(f"Unexpected error occurred: {e}")
             raise
 
     @staticmethod
-    def get_subjects(db: Session, user: User, school_id: int, name: str | None = None):
+    async def get_subjects(db: AsyncSession, user: User, school_id: int, name: str | None = None):
         try:
             if user.type == UserTypes.teacher:
-                teacher: Teacher = db.query(Teacher).get(user.id)
+                teacher: Teacher = await db.get(Teacher, user.id)
                 if teacher.school_id != school_id:
-                    logger.warning(
-                        f"User with id {user.id} tried to access subjects from school with id {school_id}. Cannot get from other schools"
-                    )
-                    raise NotAllowed("Cannot get subject from other school")
+                    raise NotAllowed("Cannot get subjects from other schools")
             elif user.type == UserTypes.student:
-                student: Student = db.query(Student).get(user.id)
+                student: Student = await db.get(Student, user.id)
                 if student.school_id != school_id:
-                    logger.warning(
-                        f"User with id {user.id} tried to access subjects from school with id {school_id}. Cannot get from other schools"
-                    )
-                    raise NotAllowed("Cannot get subject from other school")
+                    raise NotAllowed("Cannot get subjects from other schools")
             elif user.type == UserTypes.principal:
-                principal: Principal = db.query(Principal).get(user.id)
+                principal: Principal = await db.get(Principal, user.id)
                 if principal.school_id != school_id:
-                    logger.warning(
-                        f"User with id {user.id} tried to access subjects from school with id {school_id}. Cannot get from other schools"
-                    )
-                    raise NotAllowed("Cannot get subject from other school")
-            query = db.query(Subject)
-            query = query.filter(Subject.school_id == school_id)
+                    raise NotAllowed("Cannot get subjects from other schools")
+
+            stmt = select(Subject).filter(Subject.school_id == school_id)
             if name:
-                query = query.filter(Subject.name == name)
-            return query.all()
+                stmt = stmt.filter(Subject.name == name)
+            result = await db.execute(stmt)
+            return result.scalars().all()
+        except SQLAlchemyError as e:
+            logger.error(f"DB error: {e}")
+            raise
         except Exception as e:
-            logger.exception(f"Unexpected error occured: {e}")
+            logger.exception(f"Unexpected error occurred: {e}")
             raise

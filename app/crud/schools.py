@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.db.models.schools import School
@@ -15,31 +15,31 @@ logger = logging.getLogger(__name__)
 
 class SchoolCRUD:
     @staticmethod
-    def create_school(db: Session, data: SchoolData) -> School:
+    async def create_school(db: AsyncSession, data: SchoolData) -> School:
         school = School()
         try:
             for key, value in data.model_dump(exclude_unset=True).items():
                 setattr(school, key, value)
             db.add(school)
-            db.commit()
-            db.refresh(school)
+            await db.commit()
+            await db.refresh(school)
             return school
         except IntegrityError as e:
-            db.rollback()
+            await db.rollback()
             logger.error(f"Integrity error occurred: {e}")
             raise ValueError(f"This schoolname already exists: {school.name}")
         except SQLAlchemyError as e:
-            db.rollback()
+            await db.rollback()
             logger.error(f"DB error: {e}")
             raise RuntimeError("Database error")
         except Exception as e:
-            db.rollback()
+            await db.rollback()
             logger.exception(f"Unexpected error: {e}")
             raise
 
     @staticmethod
-    def delete_school(db: Session, user: User, school_id: int) -> dict:
-        school: School = db.query(School).get(school_id)
+    async def delete_school(db: AsyncSession, user: User, school_id: int) -> dict:
+        school: School = await db.get(School, school_id)
         if school is None:
             logger.warning(
                 f"User {user.id} ({user.type}) tried to delete non-existent school ID {school_id}"
@@ -47,7 +47,7 @@ class SchoolCRUD:
             raise NotFound("No such school")
 
         if user.type == UserTypes.principal:
-            principal: Principal = db.query(Principal).get(user.id)
+            principal: Principal = await db.get(Principal, user.id)
             if principal.school_id != school_id:
                 logger.warning(
                     f"Principal {user.id} tried to delete school {school_id} not assigned to them"
@@ -60,67 +60,69 @@ class SchoolCRUD:
             raise NotAllowed("Only admins or assigned principals can delete schools")
 
         try:
-            db.delete(school)
-            db.commit()
+            await db.delete(school)
+            await db.commit()
             logger.info(
                 f"School ID {school_id} deleted by user {user.id} ({user.type})"
             )
             return {f"School ID {school_id}": "Deleted successfully"}
         except SQLAlchemyError as e:
-            db.rollback()
+            await db.rollback()
             logger.error(f"DB error while deleting school {school_id}: {e}")
             raise
         except Exception as e:
-            db.rollback()
+            await db.rollback()
             logger.exception(f"Unexpected error while deleting school {school_id}: {e}")
             raise
 
     @staticmethod
-    def update_school_data(db: Session, school_id: int, data: SchoolUpdate) -> School:
-        school: School = db.query(School).get(school_id)
-        if school == None:
+    async def update_school_data(db: AsyncSession, school_id: int, data: SchoolUpdate) -> School:
+        school: School = await db.get(School, school_id)
+        if school is None:
             raise NotFound("No such school")
         try:
             for key, value in data.model_dump(exclude_unset=True).items():
                 setattr(school, key, value)
-            db.commit()
-            db.refresh(school)
+            await db.commit()
+            await db.refresh(school)
             return school
         except IntegrityError as e:
-            db.rollback()
-            logger.error(f"Integrity error occured: {e}")
+            await db.rollback()
+            logger.error(f"Integrity error occurred: {e}")
             raise ValueError(f'School name "{school.name}" is already taken')
         except SQLAlchemyError as e:
-            db.rollback()
-            logger.error(f"Unexpected error in DB occured: {e}")
-            raise RuntimeError("Unexcpeted error in DB")
+            await db.rollback()
+            logger.error(f"Unexpected error in DB occurred: {e}")
+            raise RuntimeError("Unexpected error in DB")
         except Exception as e:
-            logger.exception(f"Unexcpeted error occured: {e}")
+            await db.rollback()
+            logger.exception(f"Unexpected error occurred: {e}")
             raise
 
     @staticmethod
-    def get_school(db: Session, user: User, school_id: int) -> School:
+    async def get_school(db: AsyncSession, user: User, school_id: int) -> School:
         try:
-            school = db.query(School).get(school_id)
+            school = await db.get(School, school_id)
             if school is None:
                 logger.info(f"School not found id={school_id} by user {user.id}")
                 raise NotFound("No such school")
+
             if user.type == UserTypes.principal:
-                principal: Principal = db.query(Principal).get(user.id)
+                principal: Principal = await db.get(Principal, user.id)
                 if principal.school_id != school.id:
                     logger.warning(
                         f"Principal {user.id} tried to access school {school.id}"
                     )
                     raise NotAllowed("Cannot access this school")
             elif user.type == UserTypes.teacher:
-                teacher: Teacher = db.query(Teacher).get(user.id)
+                teacher: Teacher = await db.get(Teacher, user.id)
                 if teacher.school_id != school.id:
                     logger.warning(
                         f"Teacher {user.id} tried to access school {school.id}"
                     )
                     raise NotAllowed("Cannot access this school")
             elif user.type == UserTypes.student:
-                student: Student = db.query(Student).get(user.id)
+                student: Student = await db.get(Student, user.id)
                 if student.school_id != school.id:
                     logger.warning(
                         f"Student {user.id} tried to access school {school.id}"
@@ -132,8 +134,8 @@ class SchoolCRUD:
             raise
 
     @staticmethod
-    def get_schools(
-        db: Session, country: str | None = None, is_active: bool | None = None
+    async def get_schools(
+        db: AsyncSession, country: str | None = None, is_active: bool | None = None
     ) -> list["School"]:
         try:
             query = db.query(School)

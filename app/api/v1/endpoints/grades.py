@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from app.db.core import get_db
+from app.db.core import get_async_db
 from app.db.models.users import User
 from app.dependecies.auth import get_current_user
 from app.services.grades_service import GradeService
@@ -16,13 +16,13 @@ grades_router = APIRouter(prefix="/grades", tags=["grades"])
 
 
 @grades_router.get("/students/{student_id}/average")
-def average_grades_student(
-    db: Annotated[Session, Depends(get_db)],
+async def average_grades_student(
+    db: Annotated[Session, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     student_id: int,
 ) -> dict:
     try:
-        return GradeService(db=db, user=user, student_id=student_id).average()
+        return await GradeService(db=db, user=user, student_id=student_id).average()
     except NotFound as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except NotAllowed as e:

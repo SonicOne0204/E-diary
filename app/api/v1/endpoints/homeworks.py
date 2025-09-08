@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from typing import Annotated
 
 from app.crud.homeworks import HomeworkCRUD
-from app.db.core import get_db
+from app.db.core import get_async_db
 from app.schemas.homeworks import HomeworkData, HomeworkDataUpdate, HomeworkDataOut
 from app.db.models.homeworks import Homework
 from app.db.models.users import User
@@ -25,18 +25,18 @@ homeworks_router = APIRouter(prefix="/homeworks", tags=["homeworks"])
     response_model=HomeworkDataOut,
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.teacher]))],
 )
-def add_homework(
-    db: Annotated[Session, Depends(get_db)],
+async def add_homework(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     data: HomeworkData,
 ) -> Homework:
     try:
-        homework: Homework = HomeworkCRUD.add_homework(db=db, user=user, data=data)
+        homework: Homework = await HomeworkCRUD.add_homework(db=db, user=user, data=data)
         return homework
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"No such school with id {homework.school_id}",
+            detail=f"No such school with id {data.school_id}",
         )
     except NotAllowed:
         raise HTTPException(
@@ -62,15 +62,15 @@ def add_homework(
         )
     ],
 )
-def get_homeworks(
-    db: Annotated[Session, Depends(get_db)],
+async def get_homeworks(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     school_id: int,
     group_id: int | None = None,
     teacher_id: int | None = None,
 ) -> list[Homework]:
     try:
-        homeworks: list[Homework] = HomeworkCRUD.get_homeworks_id(
+        homeworks: list[Homework] = await HomeworkCRUD.get_homeworks_id(
             db=db,
             user=user,
             school_id=school_id,
@@ -87,28 +87,26 @@ def get_homeworks(
 
 
 @homeworks_router.get("/{homework_id}", response_model=HomeworkDataOut)
-def get_homework(
-    db: Annotated[Session, Depends(get_db)],
+async def get_homework(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     homework_id: int,
 ) -> Homework:
     try:
-        homework = HomeworkCRUD.get_homework_id(
-            db=db, user=user, homework_id=homework_id
-        )
+        homework = await HomeworkCRUD.get_homework_id(db=db, user=user, homework_id=homework_id)
         return homework
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @homeworks_router.delete("/{homework_id}")
-def delete_homework(
-    db: Annotated[Session, Depends(get_db)],
+async def delete_homework(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     homework_id: int,
 ) -> None:
     try:
-        HomeworkCRUD.delete_homework(db=db, user=user, homework_id=homework_id)
+        await HomeworkCRUD.delete_homework(db=db, user=user, homework_id=homework_id)
         logger.debug(f"Homework with id {homework_id} was deleted")
     except NotFound:
         raise HTTPException(
@@ -123,14 +121,14 @@ def delete_homework(
 
 
 @homeworks_router.patch("/{homework_id}", response_model=HomeworkDataOut)
-def update_homework(
-    db: Annotated[Session, Depends(get_db)],
+async def update_homework(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
     homework_id: int,
     data: HomeworkDataUpdate,
 ) -> Homework:
     try:
-        updated_homework = HomeworkCRUD.update_homework(
+        updated_homework = await HomeworkCRUD.update_homework(
             db=db, user=user, homework_id=homework_id, data=data
         )
         return updated_homework
