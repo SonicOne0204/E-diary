@@ -30,13 +30,14 @@ class PrincipalRegistrationData(RegistrationData):
 
 
 class RegistrationDataOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
     id: int
     username: str
     email: str
     first_name: str
     last_name: str
     type: UserTypes
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PrincipalRegistrationDataOut(RegistrationDataOut):

@@ -36,7 +36,7 @@ auth_router = APIRouter(prefix="/auth", tags=["authentication"])
 logger = logging.getLogger(__name__)
 
 
-@auth_router.post("/login", status_code=status.HTTP_200_OK, response_model=Token)
+@auth_router.post("/login/", status_code=status.HTTP_200_OK, response_model=Token)
 async def login(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -45,7 +45,7 @@ async def login(
         token = await login_user(db=db, user_data=user_data)
         return token
     except WrongPassword as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except UserDoesNotExist as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
@@ -54,7 +54,7 @@ async def login(
 
 
 @auth_router.post(
-    "/register/teachers",
+    "/register/teachers/",
     status_code=status.HTTP_201_CREATED,
     response_model=RegistrationDataOut,
 )
@@ -75,7 +75,7 @@ async def registration_teacher(
 
 
 @auth_router.post(
-    "/register/students",
+    "/register/students/",
     status_code=status.HTTP_201_CREATED,
     response_model=RegistrationDataOut,
 )
@@ -96,7 +96,7 @@ async def registration_student(
 
 
 @auth_router.post(
-    "/register/principals",
+    "/register/principals/",
     status_code=status.HTTP_201_CREATED,
     response_model=PrincipalRegistrationDataOut,
     dependencies=[Depends(check_role(UserTypes.admin))],

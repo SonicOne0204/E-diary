@@ -26,7 +26,7 @@ principal_router = APIRouter(
 
 
 @principal_router.post(
-    path="/schools/{school_id}/teachers/{teacher_id}", response_model=InvitationOut
+    path="/schools/{school_id}/teachers/{teacher_id}/", response_model=InvitationOut
 )
 async def invite_teacher_to_school_id(
     db: Annotated[AsyncSession, Depends(get_async_db)],
@@ -58,7 +58,7 @@ async def invite_teacher_to_school_id(
 
 
 @principal_router.post(
-    path="/schools/{school_id}/students/{student_id}", response_model=InvitationOut
+    path="/schools/{school_id}/students/{student_id}/", response_model=InvitationOut
 )
 async def invite_student_to_school_by_id(
     db: Annotated[AsyncSession, Depends(get_async_db)],
@@ -89,7 +89,7 @@ async def invite_student_to_school_by_id(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@principal_router.post(path="/groups/{group_id}/students/{student_id}")
+@principal_router.post(path="/groups/{group_id}/students/{student_id}/")
 async def assign_student_to_group_by_id(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
@@ -119,7 +119,7 @@ async def assign_student_to_group_by_id(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@principal_router.post(path="/subjects/{subject_id}/teachers/{teacher_id}")
+@principal_router.post(path="/subjects/{subject_id}/teachers/{teacher_id}/")
 async def assign_teacher_to_subject_by_id(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],

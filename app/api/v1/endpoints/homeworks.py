@@ -86,7 +86,7 @@ async def get_homeworks(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@homeworks_router.get("/{homework_id}", response_model=HomeworkDataOut)
+@homeworks_router.get("/{homework_id}/", response_model=HomeworkDataOut)
 async def get_homework(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
@@ -99,7 +99,7 @@ async def get_homework(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@homeworks_router.delete("/{homework_id}")
+@homeworks_router.delete("/{homework_id}/")
 async def delete_homework(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
@@ -120,7 +120,7 @@ async def delete_homework(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@homeworks_router.patch("/{homework_id}", response_model=HomeworkDataOut)
+@homeworks_router.patch("/{homework_id}/", response_model=HomeworkDataOut)
 async def update_homework(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],

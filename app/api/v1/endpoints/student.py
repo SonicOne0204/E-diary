@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 student_router = APIRouter(prefix="/students", tags=["students"])
 
 
-@student_router.post("/invitations/{invitation_id}")
+@student_router.post("/invitations/{invitation_id}/")
 async def accept_invitation_endpoint(
     invitation_id: Annotated[int, Path()],
     db: Annotated[AsyncSession, Depends(get_async_db)],

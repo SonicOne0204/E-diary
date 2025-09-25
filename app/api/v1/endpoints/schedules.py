@@ -102,7 +102,7 @@ async def get_schedules_today_or_day_of_week(
 
 
 @schedules_router.get(
-    "/{schedule_id}",
+    "/{schedule_id}/",
     response_model=ScheduleDataOut,
     dependencies=[Depends(check_role(UserTypes.admin))],
 )
@@ -121,7 +121,7 @@ async def get_schedule(
 
 
 @schedules_router.delete(
-    "/{schedule_id}",
+    "/{schedule_id}/",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))],
 )
@@ -151,7 +151,7 @@ async def delete_schedule(
 
 
 @schedules_router.patch(
-    "/{schedule_id}",
+    "/{schedule_id}/",
     response_model=ScheduleDataOut,
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))],
 )

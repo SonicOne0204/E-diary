@@ -28,7 +28,7 @@ teacher_router = APIRouter(
 
 
 @teacher_router.post(
-    "/{teacher_id}/attendances/{attendance_id}/students/{student_id}",
+    "/{teacher_id}/attendances/{attendance_id}/students/{student_id}/",
     response_model=AttendanceOut,
 )
 async def mark_attendance_id(
@@ -62,7 +62,7 @@ async def mark_attendance_id(
 
 
 @teacher_router.post(
-    "/schedules/{schedule_id}/students/{student_id}", response_model=GradeDataOut
+    "/schedules/{schedule_id}/students/{student_id}/", response_model=GradeDataOut
 )
 async def assign_grade(
     db: Annotated[AsyncSession, Depends(get_async_db)],
@@ -104,7 +104,7 @@ async def assign_grade(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@teacher_router.post("/invitations/{invitation_id}", status_code=200)
+@teacher_router.post("/invitations/{invitation_id}/", status_code=200)
 async def accept_invitation_endpoint(
     invitation_id: int,
     db: Annotated[AsyncSession, Depends(get_async_db)],

@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy import select
 
 from app.db.models.schools import School
 from app.schemas.schools import SchoolData, SchoolUpdate
@@ -38,7 +39,7 @@ class SchoolCRUD:
             raise
 
     @staticmethod
-    async def delete_school(db: AsyncSession, user: User, school_id: int) -> dict:
+    async def delete_school(db: AsyncSession, user: User, school_id: int) -> None:
         school: School = await db.get(School, school_id)
         if school is None:
             logger.warning(
@@ -65,7 +66,7 @@ class SchoolCRUD:
             logger.info(
                 f"School ID {school_id} deleted by user {user.id} ({user.type})"
             )
-            return {f"School ID {school_id}": "Deleted successfully"}
+            return None
         except SQLAlchemyError as e:
             await db.rollback()
             logger.error(f"DB error while deleting school {school_id}: {e}")
@@ -138,12 +139,16 @@ class SchoolCRUD:
         db: AsyncSession, country: str | None = None, is_active: bool | None = None
     ) -> list["School"]:
         try:
-            query = db.query(School)
+            stmt = select(School)
+
             if country is not None:
-                query = query.filter(School.country == country)
+                stmt = stmt.where(School.country == country)
             if is_active is not None:
-                query = query.filter(School.is_active == is_active)
-            return query.all()
+                stmt = stmt.where(School.is_active == is_active)
+
+            result = await db.execute(stmt)
+            return result.scalars().all()
+
         except Exception as e:
             logger.exception(f"Unexpected error: {e}")
             raise

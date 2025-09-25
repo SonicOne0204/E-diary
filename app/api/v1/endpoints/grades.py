@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 grades_router = APIRouter(prefix="/grades", tags=["grades"])
 
 
-@grades_router.get("/students/{student_id}/average")
+@grades_router.get("/students/{student_id}/average/")
 async def average_grades_student(
     db: Annotated[Session, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],

@@ -38,7 +38,7 @@ async def get_users(
         )
 
 
-@users_router.delete("/delete/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@users_router.delete("/delete/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     db: Annotated[AsyncSession, Depends(get_async_db)], user_id: Annotated[int, Path()]
 ) -> None:

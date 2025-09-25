@@ -5,7 +5,6 @@ from pydantic import ConfigDict
 class Settings(BaseSettings):
     SECRET_KEY: str
     DB_URL: str
-    TEST_DB_URL: str
     ALGORITHM: str
 
     POSTGRES_USER: str

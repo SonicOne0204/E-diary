@@ -43,7 +43,7 @@ async def add_group(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@groups_router.get("/schools/{school_id}", response_model=list[GroupDataOut])
+@groups_router.get("/schools/{school_id}/", response_model=list[GroupDataOut])
 async def get_groups(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
@@ -62,7 +62,7 @@ async def get_groups(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@groups_router.get("/{group_id}", response_model=GroupDataOut)
+@groups_router.get("/{group_id}/", response_model=GroupDataOut)
 async def get_group(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
@@ -79,7 +79,7 @@ async def get_group(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@groups_router.delete("/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
+@groups_router.delete("/{group_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_group(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
@@ -100,7 +100,7 @@ async def delete_group(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@groups_router.patch("/{group_id}", response_model=GroupDataOut)
+@groups_router.patch("/{group_id}/", response_model=GroupDataOut)
 async def update_group(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],

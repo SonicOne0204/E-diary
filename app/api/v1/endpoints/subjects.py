@@ -45,7 +45,7 @@ async def add_subject(
 
 
 @subject_router.get(
-    "/{subject_id}",
+    "/{subject_id}/",
     response_model=SubjectDataOut,
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))],
 )
@@ -68,7 +68,7 @@ async def get_subject(
 
 
 @subject_router.patch(
-    "/{subject_id}",
+    "/{subject_id}/",
     response_model=SubjectUpdateOut,
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))],
 )
@@ -100,7 +100,7 @@ async def update_subject_data(
 
 
 @subject_router.delete(
-    "/{subject_id}",
+    "/{subject_id}/",
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))],
 )
 async def delete_subject(

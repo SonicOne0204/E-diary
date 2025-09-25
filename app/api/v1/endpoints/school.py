@@ -40,11 +40,12 @@ async def add_school(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"School name {data.name} is already used",
         )
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        print(str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'{e}')
 
 
-@school_router.get("/{school_id}", response_model=SchoolOut)
+@school_router.get("/{school_id}/", response_model=SchoolOut)
 async def get_school(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
@@ -62,7 +63,7 @@ async def get_school(
 
 
 @school_router.patch(
-    "/{school_id}",
+    "/{school_id}/",
     response_model=SchoolUpdateOut,
     dependencies=[Depends(check_role(UserTypes.admin))],
 )
@@ -91,8 +92,9 @@ async def update_school_data(
 
 
 @school_router.delete(
-    "/{school_id}",
-    response_model=bool,
+    "/{school_id}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
     dependencies=[Depends(check_role([UserTypes.admin, UserTypes.principal]))],
 )
 async def delete_school(
@@ -103,6 +105,7 @@ async def delete_school(
     try:
         await SchoolCRUD.delete_school(db=db, user=user, school_id=school_id)
         logger.debug(f"school with id {school_id} was deleted")
+        return None
     except NotFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
