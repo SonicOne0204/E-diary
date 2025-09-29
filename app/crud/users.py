@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 
 class UsersCRUD:
     @staticmethod
-    async def get_users(db: AsyncSession, page: int, limit: int, username: str | None = None):
+    async def get_users(
+        db: AsyncSession, page: int, limit: int, username: str | None = None
+    ):
         try:
             offset = (page - 1) * limit
             if username:

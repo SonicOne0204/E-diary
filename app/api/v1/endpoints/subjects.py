@@ -5,7 +5,12 @@ from sqlalchemy.exc import IntegrityError
 
 from app.db.core import get_async_db
 from app.crud.subjects import SubjectCRUD
-from app.schemas.subjects import SubjectData, SubjectDataOut, SubjectUpdate, SubjectUpdateOut
+from app.schemas.subjects import (
+    SubjectData,
+    SubjectDataOut,
+    SubjectUpdate,
+    SubjectUpdateOut,
+)
 from app.exceptions.basic import NotFound, NotAllowed
 from app.db.models.users import User
 from app.db.models.subjects import Subject
@@ -55,7 +60,9 @@ async def get_subject(
     subject_id: str,
 ) -> Subject:
     try:
-        subject = await SubjectCRUD.get_subject_id(db=db, user=user, subject_id=subject_id)
+        subject = await SubjectCRUD.get_subject_id(
+            db=db, user=user, subject_id=subject_id
+        )
         return subject
     except NotFound:
         raise HTTPException(

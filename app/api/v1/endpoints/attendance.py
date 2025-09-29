@@ -59,9 +59,7 @@ async def get_attendances(
         )
     except Exception as e:
         logger.exception(f"Error fetching attendances: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @attendances_router.get(

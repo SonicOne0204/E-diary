@@ -73,7 +73,9 @@ class GroupCRUD:
             raise
 
     @staticmethod
-    async def update_group(db: AsyncSession, user: User, group_id: int, data: GroupData):
+    async def update_group(
+        db: AsyncSession, user: User, group_id: int, data: GroupData
+    ):
         try:
             group: Group | None = await db.get(Group, group_id)
             if not group:

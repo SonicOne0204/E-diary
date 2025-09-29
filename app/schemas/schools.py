@@ -29,6 +29,7 @@ class SchoolUpdate(BaseModel):
     country: str | None = None
     is_active: bool = True
 
+
 # Update data can be different in the future
 class SchoolUpdateOut(SchoolUpdate):
     id: int

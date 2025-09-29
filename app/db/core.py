@@ -1,4 +1,3 @@
-from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -9,7 +8,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 engine = create_async_engine(url=settings.DB_URL)
-AsyncSessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+AsyncSessionLocal = sessionmaker(
+    bind=engine, class_=AsyncSession, expire_on_commit=False
+)
 Base = declarative_base()
 
 

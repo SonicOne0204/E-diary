@@ -77,7 +77,9 @@ class SchoolCRUD:
             raise
 
     @staticmethod
-    async def update_school_data(db: AsyncSession, school_id: int, data: SchoolUpdate) -> School:
+    async def update_school_data(
+        db: AsyncSession, school_id: int, data: SchoolUpdate
+    ) -> School:
         school: School = await db.get(School, school_id)
         if school is None:
             raise NotFound("No such school")

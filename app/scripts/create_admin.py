@@ -12,7 +12,7 @@ async def create_admin():
         admin = result.scalars().first()
         if admin:
             print("Admin user already exists.")
-            print(f'admin id = {admin.id}, admin name = {admin.username}')
+            print(f"admin id = {admin.id}, admin name = {admin.username}")
             return
         username = input("Enter username:")
         email = input("Enter email:")
@@ -30,4 +30,5 @@ async def create_admin():
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(create_admin())

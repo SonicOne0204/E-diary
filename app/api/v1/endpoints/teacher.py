@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Path
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -52,11 +52,17 @@ async def mark_attendance_id(
     except NotFound as e:
         msg = str(e).lower()
         if "teacher" in msg:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such teacher")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No such teacher"
+            )
         elif "student" in msg:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such Student")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No such Student"
+            )
         elif "schedule" in msg:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such lesson")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No such lesson"
+            )
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -93,13 +99,19 @@ async def assign_grade(
             )
         elif '"schedules"' in err_msg:
             logger.info(f"Schedule with id {data.schedule_id} is not found")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such lesson/schedule")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No such lesson/schedule"
+            )
         elif '"students"' in err_msg:
             logger.info(f"Student with id {data.student_id} is not found")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such Student")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No such Student"
+            )
         elif '"teachers"' in err_msg:
             logger.info(f"Teacher with id {data.marked_by} is not found")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such teacher")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No such teacher"
+            )
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -117,9 +129,13 @@ async def accept_invitation_endpoint(
     except NotFound as e:
         msg = str(e).lower()
         if "invitation" in msg:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invitation not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Invitation not found"
+            )
         if "teacher" in msg:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Teacher not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Teacher not found"
+            )
     except NotAllowed as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except Exception:

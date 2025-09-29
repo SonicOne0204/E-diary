@@ -59,7 +59,8 @@ async def login(
     response_model=RegistrationDataOut,
 )
 async def registration_teacher(
-    db: Annotated[AsyncSession, Depends(get_async_db)], user_data: TeacherRegistrationData
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    user_data: TeacherRegistrationData,
 ) -> Teacher:
     try:
         return await register_teacher(db=db, user_data=user_data)
@@ -80,7 +81,8 @@ async def registration_teacher(
     response_model=RegistrationDataOut,
 )
 async def registration_student(
-    db: Annotated[AsyncSession, Depends(get_async_db)], user_data: StudentRegistrationData
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    user_data: StudentRegistrationData,
 ) -> Student:
     try:
         return await register_student(db=db, user_data=user_data)
@@ -102,7 +104,8 @@ async def registration_student(
     dependencies=[Depends(check_role(UserTypes.admin))],
 )
 async def registration_principal(
-    db: Annotated[AsyncSession, Depends(get_async_db)], user_data: PrincipalRegistrationData
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    user_data: PrincipalRegistrationData,
 ) -> Principal:
     try:
         return await register_principal(db=db, user_data=user_data)

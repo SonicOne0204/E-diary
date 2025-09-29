@@ -50,7 +50,7 @@ async def sort_grades(student_grades: list[Grade]):
 class GradeService:
     def __init__(self, grades, student: Student):
         self.grades = grades
-        self.user = student # Can possibly use later 
+        self.user = student  # Can possibly use later
 
     @classmethod
     async def create(cls, db: AsyncSession, user: User, student_id: int):

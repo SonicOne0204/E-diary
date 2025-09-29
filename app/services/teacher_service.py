@@ -23,7 +23,11 @@ logger = logging.getLogger(__name__)
 class TeacherService:
     @staticmethod
     async def mark_presence(
-        db: AsyncSession, user: User, student_id: int, lesson_id: int, status: StatusOptions
+        db: AsyncSession,
+        user: User,
+        student_id: int,
+        lesson_id: int,
+        status: StatusOptions,
     ):
         try:
             lesson: Schedule | None = await db.get(Schedule, lesson_id)
@@ -52,7 +56,7 @@ class TeacherService:
             result = await db.execute(
                 select(Attendance).where(
                     Attendance.schedule_id == lesson_id,
-                    Attendance.student_id == student_id
+                    Attendance.student_id == student_id,
                 )
             )
             attendance: Attendance | None = result.scalar_one_or_none()
@@ -116,8 +120,15 @@ class TeacherService:
 
             grade = Grade()
 
-            match (data.grade_system, data.value_numeric, data.value_letter, data.value_boolean):
-                case (GradeSystems.five_num_sys, numeric, None, None) if numeric is not None:
+            match (
+                data.grade_system,
+                data.value_numeric,
+                data.value_letter,
+                data.value_boolean,
+            ):
+                case (GradeSystems.five_num_sys, numeric, None, None) if (
+                    numeric is not None
+                ):
                     data_dict = data.model_dump(
                         exclude_unset=True,
                         exclude={"value_boolean", "value_str", "value_numeric"},
@@ -131,19 +142,25 @@ class TeacherService:
                     )
                     data_dict.update({"value_GPA": numeric})
 
-                case (GradeSystems.percent_sys, numeric, None, None) if numeric is not None:
+                case (GradeSystems.percent_sys, numeric, None, None) if (
+                    numeric is not None
+                ):
                     data_dict = data.model_dump(
                         exclude_unset=True,
                         exclude={"value_boolean", "value_str", "value_numeric"},
                     )
                     data_dict.update({"value_percent": numeric})
 
-                case (GradeSystems.letter_sys, None, letter, None) if letter is not None:
+                case (GradeSystems.letter_sys, None, letter, None) if (
+                    letter is not None
+                ):
                     data_dict = data.model_dump(
                         exclude_unset=True, exclude={"value_boolean", "value_numeric"}
                     )
 
-                case (GradeSystems.pass_fail_sys, None, None, boolean) if boolean is not None:
+                case (GradeSystems.pass_fail_sys, None, None, boolean) if (
+                    boolean is not None
+                ):
                     data_dict = data.model_dump(
                         exclude_unset=True, exclude={"value_numeric", "value_str"}
                     )

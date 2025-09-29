@@ -241,7 +241,9 @@ class ScheduleCRUD:
             if user.type == UserTypes.principal:
                 principal = await db.get(Principal, user.id)
                 if schedule.school_id != principal.school_id:
-                    raise NotAllowed("Principal cannot delete schedule from other schools")
+                    raise NotAllowed(
+                        "Principal cannot delete schedule from other schools"
+                    )
 
             await db.delete(schedule)
             await db.commit()
@@ -262,7 +264,9 @@ class ScheduleCRUD:
             if user.type == UserTypes.principal:
                 principal = await db.get(Principal, user.id)
                 if schedule.school_id != principal.school_id:
-                    raise NotAllowed("Principal cannot update schedule from other schools")
+                    raise NotAllowed(
+                        "Principal cannot update schedule from other schools"
+                    )
 
             data_dict = data.model_dump(exclude_unset=True)
             for key, value in data_dict.items():

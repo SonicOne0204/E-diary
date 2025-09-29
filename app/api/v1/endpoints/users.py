@@ -26,7 +26,9 @@ async def get_users(
     username: str | None = None,
 ) -> list[User]:
     try:
-        return await UsersCRUD.get_users(db=db, page=page, limit=limit, username=username)
+        return await UsersCRUD.get_users(
+            db=db, page=page, limit=limit, username=username
+        )
     except NotFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No such user"

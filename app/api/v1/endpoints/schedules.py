@@ -5,7 +5,12 @@ from typing import Annotated
 
 from app.crud.schedules import ScheduleCRUD
 from app.db.core import get_async_db
-from app.schemas.schedules import ScheduleData, ScheduleUpdateData, ScheduleDataOut, Week
+from app.schemas.schedules import (
+    ScheduleData,
+    ScheduleUpdateData,
+    ScheduleDataOut,
+    Week,
+)
 from app.db.models.schedules import Schedule
 from app.db.models.users import User
 from app.exceptions.basic import NotAllowed, NotFound

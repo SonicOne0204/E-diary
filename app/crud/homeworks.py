@@ -78,7 +78,9 @@ class HomeworkCRUD:
             raise
 
     @staticmethod
-    async def update_homework(db: AsyncSession, user: User, homework_id: int, data: HomeworkDataUpdate):
+    async def update_homework(
+        db: AsyncSession, user: User, homework_id: int, data: HomeworkDataUpdate
+    ):
         try:
             homework = await db.get(Homework, homework_id)
             if not homework:

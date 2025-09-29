@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.models.attendance import Attendance
 from app.db.models.types import Teacher, Student, Principal
@@ -74,13 +74,17 @@ class AttendanceCRUD:
                     raise NotAllowed("Cannot get attendance from other schools")
 
                 # Get students in the school
-                result = await db.execute(select(Student).where(Student.school_id == school_id))
+                result = await db.execute(
+                    select(Student).where(Student.school_id == school_id)
+                )
                 students = result.scalars().all()
                 ids = [student.id for student in students]
                 query = query.where(Attendance.student_id.in_(ids))
             else:
                 # Admin: optional filtering by school
-                result = await db.execute(select(Student).where(Student.school_id == school_id))
+                result = await db.execute(
+                    select(Student).where(Student.school_id == school_id)
+                )
                 students = result.scalars().all()
                 ids = [student.id for student in students]
                 query = query.where(Attendance.student_id.in_(ids))
@@ -90,7 +94,9 @@ class AttendanceCRUD:
 
             if group_id is not None:
                 result = await db.execute(
-                    select(Student).where(Student.school_id == school_id, Student.group_id == group_id)
+                    select(Student).where(
+                        Student.school_id == school_id, Student.group_id == group_id
+                    )
                 )
                 students = result.scalars().all()
                 ids = [student.id for student in students]
@@ -130,11 +136,15 @@ class AttendanceCRUD:
                     logger.warning(
                         f"User {user.id} tried to access attendance {attendance_id}. Not allowed"
                     )
-                    raise NotAllowed("Cannot access attendance from other teachers or schools")
+                    raise NotAllowed(
+                        "Cannot access attendance from other teachers or schools"
+                    )
             elif user.type == UserTypes.student:
                 student: Student = await db.get(Student, user.id)
                 if attendance.student_id != student.id:
-                    raise NotAllowed("Cannot access attendance for other students or schools")
+                    raise NotAllowed(
+                        "Cannot access attendance for other students or schools"
+                    )
 
             return attendance
         except SQLAlchemyError as e:

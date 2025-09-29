@@ -13,6 +13,8 @@ async def get_invitations(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     user: Annotated[User, Depends(get_current_user)],
 ) -> list[Invitation]:
-    result = await db.execute(select(Invitation).where(Invitation.invited_user_id == user.id))
+    result = await db.execute(
+        select(Invitation).where(Invitation.invited_user_id == user.id)
+    )
     invitations = result.scalars().all()
     return invitations

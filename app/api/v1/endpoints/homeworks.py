@@ -31,7 +31,9 @@ async def add_homework(
     data: HomeworkData,
 ) -> Homework:
     try:
-        homework: Homework = await HomeworkCRUD.add_homework(db=db, user=user, data=data)
+        homework: Homework = await HomeworkCRUD.add_homework(
+            db=db, user=user, data=data
+        )
         return homework
     except IntegrityError:
         raise HTTPException(
@@ -93,7 +95,9 @@ async def get_homework(
     homework_id: int,
 ) -> Homework:
     try:
-        homework = await HomeworkCRUD.get_homework_id(db=db, user=user, homework_id=homework_id)
+        homework = await HomeworkCRUD.get_homework_id(
+            db=db, user=user, homework_id=homework_id
+        )
         return homework
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

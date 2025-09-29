@@ -42,7 +42,9 @@ async def add_school(
         )
     except Exception as e:
         print(str(e))
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'{e}')
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}"
+        )
 
 
 @school_router.get("/{school_id}/", response_model=SchoolOut)
@@ -128,7 +130,9 @@ async def get_schools(
     is_active: bool | None = None,
 ) -> list[School]:
     try:
-        schools = await SchoolCRUD.get_schools(db=db, country=country, is_active=is_active)
+        schools = await SchoolCRUD.get_schools(
+            db=db, country=country, is_active=is_active
+        )
         return schools
     except NotFound:
         raise HTTPException(

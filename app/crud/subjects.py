@@ -68,7 +68,9 @@ class SubjectCRUD:
             raise
 
     @staticmethod
-    async def update_subject_data(db: AsyncSession, subject_id: int, data: SubjectUpdate):
+    async def update_subject_data(
+        db: AsyncSession, subject_id: int, data: SubjectUpdate
+    ):
         subject: Subject = await db.get(Subject, subject_id)
         if not subject:
             logger.info(f"Subject with id {subject_id} not found")
@@ -121,7 +123,9 @@ class SubjectCRUD:
             raise
 
     @staticmethod
-    async def get_subjects(db: AsyncSession, user: User, school_id: int, name: str | None = None):
+    async def get_subjects(
+        db: AsyncSession, user: User, school_id: int, name: str | None = None
+    ):
         try:
             if user.type == UserTypes.teacher:
                 teacher: Teacher = await db.get(Teacher, user.id)
